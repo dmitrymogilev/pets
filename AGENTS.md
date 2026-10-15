@@ -9,7 +9,8 @@ access control, and rate budgets.
 ## 0.1 Working examples of AI and Slack calls
 
 `site/test/index.html` is a smoke test page with verified, working calls to
-`spot.ai.stream()` and `spot.slack.send()`, including error handling. Use it
+`spot.ai.stream()`, `spot.ai.image()`, and `spot.slack.send()`, including error
+handling. Use it
 as the reference when adding AI or Slack features. Keep it unstyled and
 minimal; it is a test page, not part of the product UI.
 

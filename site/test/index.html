@@ -26,6 +26,14 @@
 </form>
 <label>Output<br><textarea id="ai-out" rows="8" cols="60" readonly></textarea></label>
 <pre id="ai-meta"></pre>
+
+<h2>AI image</h2>
+<form id="image-form">
+  <label>Prompt<br><textarea id="image-prompt" rows="3" cols="60" required>A small red circle on a white background.</textarea></label><br>
+  <button type="submit">Generate</button>
+</form>
+<pre id="image-meta"></pre>
+<img id="image-out" alt="" style="max-width: 512px; display: none">
 </div>
 
 <script src="/spot.js"></script>
@@ -82,6 +90,25 @@ document.getElementById('ai-form').addEventListener('submit', async function (ev
     show('ai-meta', { model: res.model, stop_reason: res.stop_reason, usage: res.usage });
   } catch (e) {
     show('ai-meta', errText(e));
+  }
+});
+
+document.getElementById('image-form').addEventListener('submit', async function (ev) {
+  ev.preventDefault();
+  const img = document.getElementById('image-out');
+  img.style.display = 'none';
+  img.removeAttribute('src');
+  show('image-meta', 'generating...');
+  try {
+    const res = await spot.ai.image(document.getElementById('image-prompt').value);
+    const first = (res.images || [])[0];
+    if (!first) throw new Error('no images in response');
+    // The response carries base64 PNG bytes in `b64` and a ready-made `data_url`.
+    img.src = first.data_url || ('data:' + (first.mime_type || 'image/png') + ';base64,' + first.b64);
+    img.style.display = 'block';
+    show('image-meta', { provider: res.provider, model: res.model, count: res.images.length, mime_type: first.mime_type });
+  } catch (e) {
+    show('image-meta', errText(e));
   }
 });
 </script>
