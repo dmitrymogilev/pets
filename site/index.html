@@ -6,5 +6,17 @@
 </head>
 <body>
 <h1>Hello, world! 😊</h1>
+<p id="owner-tools" hidden><a href="/test/">Smoke tests</a></p>
+<script src="/spot.js"></script>
+<script>
+// The link is shown only to site managers (the deploying owner and listed
+// maintainers). ai_allowed/slack_allowed are true only for managers unless
+// _access.json opts visitors in, which this site does not do.
+spot.me().then(function (me) {
+  if (me.ai_allowed || me.slack_allowed) {
+    document.getElementById('owner-tools').hidden = false;
+  }
+}).catch(function () { /* stay hidden */ });
+</script>
 </body>
 </html>

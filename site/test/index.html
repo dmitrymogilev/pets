@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pets smoke tests</title>
+</head>
+<body>
+<h1>Spot smoke tests</h1>
+<p><a href="/">Back</a></p>
+<pre id="me">loading identity...</pre>
+
+<h2>Slack</h2>
+<form id="slack-form">
+  <label>Channel <input id="slack-channel" placeholder="#channel, C0123 or U0123" required></label><br>
+  <label>Text <input id="slack-text" value="Pets smoke test" size="40" required></label><br>
+  <button type="submit">Send</button>
+</form>
+<pre id="slack-out"></pre>
+
+<h2>AI</h2>
+<form id="ai-form">
+  <label>Prompt<br><textarea id="ai-prompt" rows="4" cols="60" required>Say hello in one short sentence.</textarea></label><br>
+  <button type="submit">Ask</button>
+</form>
+<label>Output<br><textarea id="ai-out" rows="8" cols="60" readonly></textarea></label>
+<pre id="ai-meta"></pre>
+
+<script src="/spot.js"></script>
+<script>
+function show(id, value) {
+  document.getElementById(id).textContent =
+    typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+}
+function errText(e) {
+  return 'ERROR ' + (e.status || '') + ' ' + (e.code || '') + ' ' + (e.message || e);
+}
+
+spot.me().then(function (me) { show('me', me); })
+  .catch(function (e) { show('me', errText(e)); });
+
+document.getElementById('slack-form').addEventListener('submit', async function (ev) {
+  ev.preventDefault();
+  show('slack-out', 'sending...');
+  try {
+    const res = await spot.slack.send({
+      channel: document.getElementById('slack-channel').value.trim(),
+      text: document.getElementById('slack-text').value,
+    });
+    show('slack-out', res);
+  } catch (e) {
+    show('slack-out', errText(e));
+  }
+});
+
+document.getElementById('ai-form').addEventListener('submit', async function (ev) {
+  ev.preventDefault();
+  const out = document.getElementById('ai-out');
+  out.value = '';
+  show('ai-meta', 'streaming...');
+  try {
+    const res = await spot.ai.stream(
+      [{ role: 'user', content: document.getElementById('ai-prompt').value }],
+      { onToken: function (delta, text) { out.value = text; } },
+    );
+    out.value = res.text;
+    show('ai-meta', { model: res.model, stop_reason: res.stop_reason, usage: res.usage });
+  } catch (e) {
+    show('ai-meta', errText(e));
+  }
+});
+</script>
+</body>
+</html>

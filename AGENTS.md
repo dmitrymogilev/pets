@@ -6,6 +6,22 @@ Read `docs/spot-platform.md` before designing or implementing any feature. It de
 what Spot is and what it can do: identity, document store, realtime, files, AI, Slack,
 access control, and rate budgets.
 
+## 0.1 Working examples of AI and Slack calls
+
+`site/test/index.html` is a smoke test page with verified, working calls to
+`spot.ai.stream()` and `spot.slack.send()`, including error handling. Use it
+as the reference when adding AI or Slack features. Keep it unstyled and
+minimal; it is a test page, not part of the product UI.
+
+- The page is served at `/test/`. The main page links to it only for site
+  managers, so visitors never see it.
+- AI access and Slack access are granted to site managers only. Visitors
+  get 403 unless `site/_access.json` opts them in with `"ai": "visitors"`
+  or `"slack": "visitors"`.
+- The chat model is set by the Spot admin. Pass `model` only if the admin
+  confirmed the name is on the allowlist.
+- The Slack bot must be a member of the target channel.
+
 ## 1. Local memory and temp files
 
 - Use `./local_memory/` as the local user memory. Create the directory if it does not exist.
