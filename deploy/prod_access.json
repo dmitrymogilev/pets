@@ -1,3 +1,5 @@
 {
-  "maintainers": ["dmitry.mogilev@t1a.com"]
+  "maintainers": ["dmitry.mogilev@t1a.com"],
+  "ai": "visitors",
+  "slack": "visitors"
 }

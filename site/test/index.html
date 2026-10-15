@@ -8,7 +8,9 @@
 <h1>Spot smoke tests</h1>
 <p><a href="/">Back</a></p>
 <pre id="me">loading identity...</pre>
+<p id="denied" hidden>This page is for the site owner only.</p>
 
+<div id="tools" hidden>
 <h2>Slack</h2>
 <form id="slack-form">
   <label>Channel <input id="slack-channel" placeholder="#channel, C0123 or U0123" required></label><br>
@@ -24,6 +26,7 @@
 </form>
 <label>Output<br><textarea id="ai-out" rows="8" cols="60" readonly></textarea></label>
 <pre id="ai-meta"></pre>
+</div>
 
 <script src="/spot.js"></script>
 <script>
@@ -35,8 +38,21 @@ function errText(e) {
   return 'ERROR ' + (e.status || '') + ' ' + (e.code || '') + ' ' + (e.message || e);
 }
 
-spot.me().then(function (me) { show('me', me); })
-  .catch(function (e) { show('me', errText(e)); });
+// Owner-only, client side. Spot has no per-path access control, so anyone
+// who can visit the site can load this HTML; the forms stay hidden unless
+// the visitor's identity matches the owner. AI and Slack are open to all
+// visitors on production, so ai_allowed and slack_allowed are not signals
+// here. Reach this page by typing /test/; nothing links to it.
+var OWNER = 'dmitry.mogilev@t1a.com';
+spot.me().then(function (me) {
+  if ((me.email || '').toLowerCase() === OWNER) {
+    show('me', me);
+    document.getElementById('tools').hidden = false;
+  } else {
+    show('me', me.email || '(unknown)');
+    document.getElementById('denied').hidden = false;
+  }
+}).catch(function (e) { show('me', errText(e)); });
 
 document.getElementById('slack-form').addEventListener('submit', async function (ev) {
   ev.preventDefault();

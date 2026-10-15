@@ -13,11 +13,17 @@ access control, and rate budgets.
 as the reference when adding AI or Slack features. Keep it unstyled and
 minimal; it is a test page, not part of the product UI.
 
-- The page is served at `/test/`. The main page links to it only for site
-  managers, so visitors never see it.
-- AI access and Slack access are granted to site managers only. Visitors
-  get 403 unless `site/_access.json` opts them in with `"ai": "visitors"`
-  or `"slack": "visitors"`.
+- The page is served at `/test/`. Nothing links to it; the owner reaches it by
+  typing the path manually. The forms are hidden by default and shown only
+  when `spot.me().email` matches the `OWNER` constant in the page. Anyone else
+  sees an owner-only notice. This is client side only, since Spot has no
+  per-path access control; the server still enforces the AI and Slack
+  policies regardless of what the page shows.
+- AI access and Slack access are granted to site managers only unless the
+  access policy opts visitors in with `"ai": "visitors"` or
+  `"slack": "visitors"`. Production (`deploy/prod_access.json`) opts visitors
+  in to both AI and Slack, so every mesh user can call them there. The local
+  preview (`site/_access.json`) has no opt-ins.
 - The chat model is set by the Spot admin. Pass `model` only if the admin
   confirmed the name is on the allowlist.
 - The Slack bot must be a member of the target channel.
@@ -77,8 +83,8 @@ for a production deploy, from a clean checkout of `main`:
 ```
 
 It deploys `site/` under the current user's mesh identity, with the policy from
-`deploy/prod_access.json`: `maintainers` and no `allow` list, so the site is open to the
-whole mesh. Only the site owner and the listed maintainers can run it. There is no CI
+`deploy/prod_access.json`: `maintainers`, `"ai": "visitors"`, `"slack": "visitors"`, and
+no `allow` list, so the site and its AI and Slack calls are open to the whole mesh. Only the site owner and the listed maintainers can run it. There is no CI
 deploy; the Spot apex is reachable only from inside the mesh.
 
 ## 3. Git
