@@ -53,8 +53,14 @@ Steps:
 
 ### Production
 
-Every push to `main` deploys `site/` to `https://pets-game.spot.t1a.dev/` via
-`.github/workflows/deploy.yml`, which runs `scripts/deploy-prod.sh` with the
-`SPOT_PUBLISH_KEY` repository secret. Production is open to the whole mesh: its policy
-comes from `deploy/prod_access.json`, which has `maintainers` and no `allow` list.
-Do not run the production deploy by hand unless the user explicitly asks.
+Production is `https://pets.spot.t1a.dev/`. Deploy it only when the user explicitly asks
+for a production deploy, from a clean checkout of `main`:
+
+```
+./scripts/deploy-prod.sh
+```
+
+It deploys `site/` under the current user's mesh identity, with the policy from
+`deploy/prod_access.json`: `maintainers` and no `allow` list, so the site is open to the
+whole mesh. Only the site owner and the listed maintainers can run it. There is no CI
+deploy; the Spot apex is reachable only from inside the mesh.
