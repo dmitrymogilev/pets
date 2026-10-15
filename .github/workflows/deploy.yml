@@ -1,0 +1,29 @@
+name: Deploy to Spot
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-spot
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy pets to Spot
+    # The runner must be able to reach the Spot apex. GitHub-hosted runners
+    # cannot see the mesh; switch to a self-hosted runner if the deploy fails
+    # with a network error.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy
+        env:
+          SPOT_URL: https://spot.t1a.dev
+          SPOT_SITE: pets-game
+          SPOT_PUBLISH_KEY: ${{ secrets.SPOT_PUBLISH_KEY }}
+        run: ./scripts/deploy-prod.sh
