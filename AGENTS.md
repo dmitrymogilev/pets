@@ -73,6 +73,61 @@ Steps:
    SPOT_URL=https://spot.t1a.dev spot deploy pets-local-<user-slug> site
    ```
 
+### Testing UI changes
+
+Test in a browser against the deployed local preview, never against `site/` served
+locally. Pages load `/spot.js` from the Spot backend, so a local static server has no
+SDK, no identity, and no data, and the page misbehaves in ways production does not.
+Identity comes from the mesh, so a browser on this machine is already signed in as the
+current user; no login step is needed.
+
+After every change: deploy the local preview, then run the headless check and look at
+the screenshots it writes to `local_memory/ui-check/`:
+
+```
+node scripts/ui-check/check.js https://pets-local-<user-slug>.spot.t1a.dev / /test/
+```
+
+It prints each page's title and screenshot path, lists console errors, page errors, and
+failed requests, and exits non-zero if any page produced one. Pass more paths to cover
+new pages. One-time setup needs Node 20 or newer (`brew install node` on macOS) and
+downloads Playwright and its own Chromium. macOS needs nothing else; Linux may need a few
+shared libraries, see below:
+
+```
+npm --prefix scripts/ui-check install
+npm --prefix scripts/ui-check run setup
+```
+
+If anything is missing, install it yourself and continue: Node via the system package
+manager (`brew install node` on macOS, `dnf install nodejs` on Fedora, `apt install
+nodejs npm` on Debian and Ubuntu), then the two setup commands above. Do not ask the user
+to do it. If `npm run setup` reports missing system libraries on Linux, run
+`npx --prefix scripts/ui-check playwright install-deps chromium` or install the listed
+packages.
+
+You may change, fix, or improve anything under `scripts/ui-check/`, for example adding
+viewport sizes, element assertions, or a wait for a specific selector. Keep it to a
+single plain Node script with Playwright as the only dependency, keep the command line
+shape `check.js <site-url> [path ...]` and the non-zero exit on errors, keep the setup
+comment at the top of the script and this section in sync, and run it against the
+preview before committing.
+
+For anything the baseline check does not cover, such as clicking through a flow,
+submitting a form, or watching a realtime update land in a second tab, write a throwaway
+Playwright script in `local_memory/` and run it with Node. Reuse the installed package
+and the same launch flag:
+
+```js
+const { chromium } = require('/abs/path/to/scripts/ui-check/node_modules/playwright');
+const browser = await chromium.launch({ args: ['--disable-quic'] });
+```
+
+Point it at the deployed preview, take screenshots into `local_memory/` and view them,
+and read console and network errors the same way `check.js` does. Throwaway scripts are
+never committed. If a check turns out to be worth keeping for every change, fold it into
+`check.js` instead.
+
 ### Production
 
 Production is `https://pets.spot.t1a.dev/`. Deploy it only when the user explicitly asks

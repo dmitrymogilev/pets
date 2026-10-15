@@ -1,0 +1,14 @@
+{
+  "name": "pets-ui-check",
+  "private": true,
+  "description": "Headless browser check of a deployed Pets site",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "setup": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.62.0"
+  }
+}
