@@ -64,3 +64,57 @@ It deploys `site/` under the current user's mesh identity, with the policy from
 `deploy/prod_access.json`: `maintainers` and no `allow` list, so the site is open to the
 whole mesh. Only the site owner and the listed maintainers can run it. There is no CI
 deploy; the Spot apex is reachable only from inside the mesh.
+
+## 3. Git
+
+### Commits
+
+- Never add `Co-Authored-By` trailers or any other co-author attribution to commits.
+  Commits are authored by the current git user only.
+- Commit only when the user asks.
+
+### Branch policy: main only
+
+- There is a single branch, `main`. Do not create feature branches, do not open pull or
+  merge requests. Commit directly on `main` and push to `origin main`.
+- Always assume a teammate may have pushed to `main` and that the local `main` is stale.
+  Never push without integrating remote changes first.
+
+### Push flow
+
+Run this sequence every time you push:
+
+```
+git fetch origin
+git pull --rebase origin main
+git push origin main
+```
+
+`git pull --rebase` replays the local commits on top of the remote `main`, so history stays
+linear and no merge commits are created. If there are no conflicts, the push just works.
+
+If the push is rejected because someone pushed in between, repeat the sequence from
+`git pull --rebase`.
+
+### Conflicts
+
+Resolve all conflicts yourself, completely, without asking the user and without leaving the
+repository mid-rebase. Keep the teammate's changes intact and re-apply ours on top; never
+discard remote work to make a conflict go away. Do not use `git rebase --skip`. After the
+push, tell the user which files conflicted and how you resolved them.
+
+### Force push
+
+Force pushing should never be needed in this flow. If it is unavoidable (for example after
+amending a commit that was already pushed), never use plain `--force`. Use the lease options
+so the push fails when the remote `main` differs from what the local checkout last saw:
+
+```
+git fetch origin
+git push --force-with-lease=main:origin/main --force-if-includes origin main
+```
+
+`--force-with-lease` rejects the push if remote `main` moved past the local `origin/main`.
+`--force-if-includes` additionally rejects it if the remote commits were fetched but not yet
+integrated into the local branch. If the push is rejected, do not retry with `--force`:
+run `git pull --rebase origin main`, resolve conflicts, and push normally.
