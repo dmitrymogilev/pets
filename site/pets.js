@@ -16,7 +16,7 @@
   'use strict';
 
   const DEFAULT_CHANNEL = '#pets-private';
-  const LIMITS = { name: 30, description: 200, soul: 600, text: 200, imagePrompt: 200 };
+  const LIMITS = { name: 30, description: 400, soul: 600, text: 400, imagePrompt: 400 };
   const STALE_MS = 90 * 1000;
   const HOUR = 3600 * 1000;
   const DAY = 24 * HOUR;
@@ -558,6 +558,31 @@
 
   // ------------------------------------------------------------------- DOM
 
+  // Live "used / limit" counter at the right end of the title line of every
+  // input with a maxlength. The browser silently drops keystrokes at the limit,
+  // so the counter says so. Idempotent: call again after setting values from
+  // code to resync the numbers.
+  function counters(root) {
+    (root || document).querySelectorAll('input[maxlength], textarea[maxlength]').forEach((input) => {
+      let count = input._count;
+      if (!count) {
+        count = el('span', { class: 'count', 'aria-live': 'polite' });
+        const label = input.closest('label');
+        const title = label && label.querySelector(':scope > span');
+        if (title) { title.classList.add('has-count'); title.appendChild(count); }
+        else (input.closest('.field') || input.parentNode).appendChild(count);
+        input._count = count;
+        input.addEventListener('input', () => sync(input));
+      }
+      sync(input);
+    });
+    function sync(input) {
+      const max = Number(input.maxLength), used = input.value.length;
+      input._count.textContent = used + ' / ' + max + (used >= max ? ' · limit reached' : '');
+      input._count.classList.toggle('full', used >= max);
+    }
+  }
+
   function el(tag, attrs, children) {
     const node = document.createElement(tag);
     if (attrs) Object.keys(attrs).forEach((k) => {
@@ -591,7 +616,7 @@
   }
 
   window.Pets = {
-    DEFAULT_CHANNEL, LIMITS, TEMPLATES, STALE_MS, templateByKey, db, strip,
+    DEFAULT_CHANNEL, LIMITS, TEMPLATES, STALE_MS, templateByKey, db, strip, counters,
     errText, isLocal, alias, restoreNames, ageDays, hoursAgo, humanDuration,
     careText, careNode, canCare, isOwner, lower,
     initialState, effectiveState, label, stateSummary, needsAttention,
@@ -600,4 +625,5 @@
     createPet, uploadAvatar,
     el, avatarNode, errorLog,
   };
+  counters(); // the script is loaded at the end of <body>, so the fields exist
 })();

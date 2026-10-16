@@ -3,6 +3,7 @@
    the tokens and add each theme's own decorations. */
 
 :root {
+  color-scheme: light; /* native scrollbars, resize grips, and dropdowns match the fields */
   --bg: #f4f4f4;
   --surface: #ffffff;
   --surface-2: #ececec;
@@ -150,6 +151,9 @@ select { width: auto; max-width: 100%; }
 .field > span, .field > label > span { font-weight: 600; }
 input[type="radio"] { accent-color: var(--accent); width: 1.1em; height: 1.1em; }
 .hint { color: var(--muted); font-size: .9rem; }
+.has-count { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.count { color: var(--muted); font-size: .85rem; font-weight: 400; align-self: flex-end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.count.full { color: var(--danger); font-weight: 600; }
 .choice { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .choice label { display: flex; gap: 10px; align-items: flex-start; }
 .choice input { margin: .3em 0 0; }
@@ -283,6 +287,7 @@ details > summary + * { margin-top: 16px; }
 /*    everything else in soft blue shadow. Soft serif for the names.        */
 /* ======================================================================= */
 [data-theme="nightlight"] {
+  color-scheme: dark;
   --night: #121830; --deep: #0b0f1f; --lamp: #ffc77a; --moon: #cfd7ee;
   --bg: var(--night); --surface: rgba(255, 255, 255, .05); --surface-2: rgba(255, 255, 255, .09); --ink: #e9ecf6; --muted: #98a0bc;
   --line: rgba(207, 215, 238, .18); --accent: var(--lamp); --accent-ink: #2a1c05; --danger: #ff8c7a; --ok: #9ad8a3;
@@ -421,6 +426,7 @@ details > summary + * { margin-top: 16px; }
 /*    highlight on the rim, the avatar inside a bubble.                     */
 /* ======================================================================= */
 [data-theme="aquarium"] {
+  color-scheme: dark;
   --water: #0e5e6f; --deep: #052a33; --glass: rgba(191, 239, 255, .35); --coral: #ff7a59; --sand: #e8d6a8;
   --bg: var(--water); --surface: rgba(255, 255, 255, .07); --surface-2: rgba(191, 239, 255, .14); --ink: #e9f7fa; --muted: #a6d1da;
   --line: var(--glass); --accent: var(--coral); --accent-ink: #2b0d05; --danger: #ffb0a0; --ok: #9fe3c0;
@@ -511,6 +517,7 @@ details > summary + * { margin-top: 16px; }
 /*    work, grid paper, hatched meters, crosshairs on the avatar.           */
 /* ======================================================================= */
 [data-theme="blueprint"] {
+  color-scheme: dark;
   --blue: #163f8f; --blue-deep: #0f2f6e; --white: #eaf1ff; --pencil: #ffd166;
   --bg: var(--blue); --surface: rgba(255, 255, 255, .04); --surface-2: rgba(255, 255, 255, .1); --ink: var(--white); --muted: #a9bde8;
   --line: rgba(234, 241, 255, .7); --accent: var(--white); --accent-ink: var(--blue-deep); --danger: #ffa094; --ok: #a8f0c6;
@@ -616,6 +623,7 @@ details > summary + * { margin-top: 16px; }
 /*     bulbs around every board, a spotlight on the avatar.                 */
 /* ======================================================================= */
 [data-theme="theater"] {
+  color-scheme: dark;
   --velvet: #7a1226; --velvet-dark: #4e0a18; --gold: #e0b347; --stage: #1a1214; --board: #241a1d; --cream: #f6e7c8;
   --bg: var(--stage); --surface: var(--board); --surface-2: #332327; --ink: var(--cream); --muted: #c4a98a;
   --line: var(--gold); --accent: var(--gold); --accent-ink: #2a1a05; --danger: #ff9b8a; --ok: #c9e39a;

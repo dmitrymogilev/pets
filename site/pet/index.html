@@ -33,8 +33,8 @@
         <h2 id="talk-title">Talk to the pet</h2>
         <p id="no-care" class="muted" hidden>Only the listed carers can talk to this pet. You can still watch.</p>
         <form id="interact" hidden>
-          <p class="field"><label><span class="hint">What do you do or say?</span><textarea id="text" maxlength="200" rows="3" placeholder="Feed it, play with it, tell it about your day..." required></textarea></label>
-          <span class="hint"><span id="count">0</span>/200. The pet's memory of this and its reaction go to <code class="channel-name"></code>.</span></p>
+          <p class="field"><label><span class="hint">What do you do or say?</span><textarea id="text" maxlength="400" rows="3" placeholder="Feed it, play with it, tell it about your day..." required></textarea></label>
+          <span class="hint">The pet's memory of this and its reaction go to <code class="channel-name"></code>.</span></p>
           <div class="actions"><button type="submit" class="btn btn-primary" id="send">Send</button> <span id="progress" class="inline-status" role="status"></span></div>
         </form>
         <p id="typing" class="muted" aria-live="polite"></p>
@@ -76,14 +76,14 @@
               <legend>Who can care</legend>
               <div class="choice">
                 <label><input type="radio" name="care" value="owner"> <span>Only me</span></label>
-                <label><input type="radio" name="care" value="everyone"> <span>Everyone on the team</span></label>
+                <label><input type="radio" name="care" value="everyone"> <span>Everyone</span></label>
                 <label><input type="radio" name="care" value="group"> <span>Me and a few people</span></label>
               </div>
               <p class="field" id="carers-box" hidden><label><span>Their emails</span><textarea id="carers" rows="3"></textarea></label><span class="hint">One per line, or separated by commas.</span></p>
             </fieldset>
             <p class="field"><label><span>Slack channel</span><input id="edit-channel"></label><span class="hint">The Spot app must be a member of the channel.</span></p>
-            <p class="field"><label><span>Description</span><textarea id="edit-description" maxlength="200" rows="3" required></textarea></label><span class="hint">Up to 200 characters.</span></p>
-            <p class="field"><label><span>Soul</span><textarea id="edit-soul" maxlength="600" rows="6" required></textarea></label><span class="hint">Up to 600 characters.</span></p>
+            <p class="field"><label><span>Description</span><textarea id="edit-description" maxlength="400" rows="3" required></textarea></label></p>
+            <p class="field"><label><span>Soul</span><textarea id="edit-soul" maxlength="600" rows="6" required></textarea></label></p>
             <div class="actions"><button type="submit" class="btn">Save changes</button> <span id="edit-status" class="inline-status" role="status"></span></div>
           </form>
           <div class="actions" style="margin-top:20px"><button type="button" class="btn btn-danger" id="dismiss">Dismiss this pet</button> <span id="dismiss-status" class="inline-status" role="status"></span></div>
@@ -295,7 +295,6 @@
   if (carer) $('interact').hidden = false; else $('no-care').hidden = false;
   let typingSent = false;
   $('text').addEventListener('input', () => {
-    $('count').textContent = $('text').value.length;
     if (me && !typingSent) { typingSent = true; room.send('typing', { name: me.name || me.email }); setTimeout(() => { typingSent = false; }, 2000); }
   });
   $('interact').addEventListener('submit', async (ev) => {
@@ -308,7 +307,7 @@
       const inter = await P.enqueue(pet, text, me);
       ownIds.add(inter.id);
       inters[inter.id] = strip(inter);
-      $('text').value = ''; $('count').textContent = '0';
+      $('text').value = ''; P.counters();
       renderReactions();
       $('progress').textContent = 'in line, ticket ' + inter.data.ticket + '...';
       scheduleTick(0);
@@ -329,6 +328,7 @@
     $('edit-channel').value = pet.channel;
     $('edit-description').value = pet.description;
     $('edit-soul').value = pet.soul;
+    P.counters();
     document.querySelectorAll('input[name=care]').forEach((r) => r.addEventListener('change', () => {
       $('carers-box').hidden = document.querySelector('input[name=care]:checked').value !== 'group';
     }));

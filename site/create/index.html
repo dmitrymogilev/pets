@@ -22,26 +22,26 @@
 <form id="form">
   <section class="panel">
     <h2>Who is it</h2>
-    <p class="field"><label><span>Name</span><input id="name" maxlength="30" required autocomplete="off"></label><span class="hint">Up to 30 characters.</span></p>
+    <p class="field"><label><span>Name</span><input id="name" maxlength="30" required autocomplete="off"></label></p>
     <p class="field"><label><span>Kind of pet</span><select id="kind" required></select></label></p>
 
     <fieldset id="custom-box" hidden>
       <legend>Custom avatar</legend>
-      <p class="field"><label><span>Describe the picture</span><textarea id="image-prompt" maxlength="200" rows="3"></textarea></label><span class="hint">Up to 200 characters. The picture is generated for you.</span></p>
+      <p class="field"><label><span>Describe the picture</span><textarea id="image-prompt" maxlength="400" rows="3"></textarea></label><span class="hint">The picture is generated for you.</span></p>
       <div class="actions"><button type="button" class="btn" id="generate">Generate picture</button> <span id="image-status" class="inline-status"></span></div>
       <p><img id="avatar-preview" class="avatar-preview" alt="Generated avatar" width="192" height="192" hidden></p>
     </fieldset>
 
-    <p class="field"><label><span>Description</span><textarea id="description" maxlength="200" rows="3" required></textarea></label><span class="hint">Everyone sees this. Up to 200 characters.</span></p>
-    <p class="field"><label><span>Soul</span><textarea id="soul" maxlength="600" rows="6" required></textarea></label><span class="hint">Personality and behavior, up to 600 characters. Other people do not see it on the pages, but it is not a secret: the whole game runs in the browser.</span></p>
+    <p class="field"><label><span>Description</span><textarea id="description" maxlength="400" rows="3" required></textarea></label><span class="hint">Everyone sees this.</span></p>
+    <p class="field"><label><span>Soul</span><textarea id="soul" maxlength="600" rows="6" required></textarea></label><span class="hint">Personality and behavior. Other people do not see it on the pages, but it is not a secret: the whole game runs in the browser.</span></p>
   </section>
 
   <section class="panel">
     <h2>Who can care</h2>
     <p class="hint">Everyone can see every pet. This decides who may interact with it.</p>
     <div class="choice">
-      <label><input type="radio" name="care" value="owner" checked> <span>Only me</span></label>
-      <label><input type="radio" name="care" value="everyone"> <span>Everyone on the team</span></label>
+      <label><input type="radio" name="care" value="owner"> <span>Only me</span></label>
+      <label><input type="radio" name="care" value="everyone" checked> <span>Everyone</span></label>
       <label><input type="radio" name="care" value="group"> <span>Me and a few people</span></label>
     </div>
     <p class="field" id="carers-box" hidden><label><span>Their emails</span><textarea id="carers" rows="3"></textarea></label><span class="hint">One per line, or separated by commas.</span></p>
