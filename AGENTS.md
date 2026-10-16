@@ -6,6 +6,8 @@ Read `docs/spot-platform.md` before designing or implementing any feature. It de
 what Spot is and what it can do: identity, document store, realtime, files, AI, Slack,
 access control, and rate budgets.
 
+Read `docs/pets-design.md` before changing game logic. It describes the pages, the trust model, the collections, and how pets react.
+
 ## 0.1 Working examples of AI and Slack calls
 
 `site/test/index.html` is a smoke test page with verified, working calls to

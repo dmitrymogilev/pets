@@ -6,7 +6,7 @@ Issues and pull requests are welcome.
 
 1. Fork the repo, or branch from `main` if you are a collaborator.
 2. Make the change on a branch with a short lowercase name, for example `fix-about-tagline`.
-3. Test it. Deploy a private preview and run the UI check, as described in the [README](README.md#run-it).
+3. Test it. Deploy a private preview as described in the [README](README.md#run-it) and check your pages in the browser. `scripts/ui-check/check.js` runs the same check headlessly; setup steps are at the top of the script.
 4. Open a pull request against `main`. Say what changed and why, in a few short sentences.
 5. A collaborator reviews it and merges it with a rebase. History stays linear.
 
