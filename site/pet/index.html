@@ -11,6 +11,7 @@
 <div class="wrap">
 <header class="top">
   <div class="brand"><a class="back" href="/">All pets</a></div>
+  <div class="top-actions"><span id="sound-toggle"></span></div>
 </header>
 
 <main>
@@ -98,12 +99,14 @@
 
 <script src="/spot.js"></script>
 <script src="/pets.js"></script>
+<script src="/sounds.js"></script>
 <script>
 (async function () {
   const P = Pets;
   const { el, db, strip, effectiveState, label, errText, lower } = P;
   const $ = (id) => document.getElementById(id);
   const errors = P.errorLog($('error-list'));
+  PetsSounds.toggle($('sound-toggle'));
   const petId = new URLSearchParams(location.search).get('id');
   if (!petId) { $('status').textContent = 'No pet id in the URL.'; return; }
 
@@ -165,6 +168,22 @@
 
   const inters = {}; // id -> interaction (stripped)
   const ownIds = new Set();
+  const ownBefore = new Map(); // id -> effective state when this tab sent it
+
+  // An interaction sent from this tab reached done or failed, whether this
+  // tab processed it or another one took it over. Called from both paths;
+  // the first call wins, so the sound plays once. Replayed history never
+  // gets here because ownIds only holds ids enqueued in this tab.
+  function landed(inter) {
+    if (!ownIds.has(inter.id) || (inter.status !== 'done' && inter.status !== 'failed')) return;
+    ownIds.delete(inter.id);
+    const before = ownBefore.get(inter.id);
+    ownBefore.delete(inter.id);
+    $('progress').textContent = '';
+    $('send').disabled = false;
+    if (inter.status === 'failed') PetsSounds.play('failed');
+    else PetsSounds.react(pet, inter.reaction, P.stateTone(before, inter.state_after), inter.state_after);
+  }
 
   function renderReactions() {
     const list = Object.values(inters).sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 30);
@@ -209,7 +228,7 @@
   // ---------------------------------------------------------------- live
   db.interactions.subscribe({
     onCreate: (d) => { if (d.data.pet_id === petId) { inters[d.id] = strip(d); renderReactions(); scheduleTick(500); } },
-    onUpdate: (d) => { if (d.data.pet_id === petId) { inters[d.id] = strip(d); renderReactions(); scheduleTick(500); } },
+    onUpdate: (d) => { if (d.data.pet_id === petId) { inters[d.id] = strip(d); renderReactions(); landed(inters[d.id]); scheduleTick(500); } },
     onDelete: (id) => { delete inters[id]; renderReactions(); },
     onError: (e) => errors.add('realtime interactions', e),
   });
@@ -272,7 +291,7 @@
         if (res.takeover) $('notice').textContent = new Date().toLocaleTimeString() + ' Finished a reaction left behind by a closed tab.';
         if (res.inter.ai_error) errors.add('AI', res.inter.ai_error);
         if (res.inter.slack_error) errors.add('Slack ' + pet.channel, res.inter.slack_error);
-        if (ownIds.has(res.inter.id)) { ownIds.delete(res.inter.id); $('progress').textContent = ''; $('send').disabled = false; }
+        landed(res.inter);
         next = 500;
       } else if (res.action === 'waiting' || res.action === 'skipped') {
         next = 2000;
@@ -306,6 +325,8 @@
     try {
       const inter = await P.enqueue(pet, text, me);
       ownIds.add(inter.id);
+      ownBefore.set(inter.id, effectiveState(state));
+      PetsSounds.play('send');
       inters[inter.id] = strip(inter);
       $('text').value = ''; P.counters();
       renderReactions();

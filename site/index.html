@@ -16,6 +16,7 @@
   </div>
   <div class="top-actions">
     <label class="theme-switch" id="theme-switch"></label>
+    <span id="sound-toggle"></span>
     <a class="btn btn-primary" href="/create/">Create a pet</a>
   </div>
 </header>
@@ -29,6 +30,7 @@
 
 <script src="/spot.js"></script>
 <script src="/pets.js"></script>
+<script src="/sounds.js"></script>
 <script>
 (async function () {
   const { el, db, strip, effectiveState, label, ageDays, careText, avatarNode, errorLog, runDigests, hoursAgo, humanDuration, needsAttention } = Pets;
@@ -36,6 +38,7 @@
   const gallery = document.getElementById('gallery');
   const status = document.getElementById('status');
   PetsTheme.switcher(document.getElementById('theme-switch'));
+  PetsSounds.toggle(document.getElementById('sound-toggle'));
 
   let me = null;
   try { me = await spot.me(); } catch (e) { errors.add('identity', e); }

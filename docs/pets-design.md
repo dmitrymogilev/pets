@@ -15,7 +15,8 @@ update happens on a user visit. Nobody visiting means nothing happens.
 - `/test/` smoke tests for the platform calls, owner only. `/story/` is an
   unrelated animated page.
 
-Shared code lives in `site/pets.js` as the global `Pets`.
+Shared code lives in `site/pets.js` as the global `Pets`; sound effects in
+`site/sounds.js` as `PetsSounds`.
 
 ## Trust model
 
@@ -107,6 +108,21 @@ dismiss, and a daily digest per channel listing pets that need attention
 (food under 20, health under 40, or no visit for 3 days). The digest is
 triggered by any gallery visit; the earliest `digests` document for the
 channel and date wins, and only its creator posts.
+
+## Sounds
+
+`site/sounds.js` (global `PetsSounds`) synthesizes every effect with the Web
+Audio API; there are no audio files. Sounds: hatch on create (played inside
+the submit handler before navigating, since the room loads without a
+gesture), a tick on send, the reaction when an interaction sent from this
+tab reaches `done`, and a low thud when it reaches `failed`. Other people's
+interactions and replayed history are silent. The reaction is a burst of
+blips in the pet's voice, pitched per kind (custom pets hash their id),
+bent by the direction of the state change (`Pets.stateTone`: weighted sum
+of the four deltas, mood counted twice, within 8 is neutral) and slowed by
+low energy, followed by a rising, flat, or falling cadence. The header
+button toggles sound and remembers it in localStorage `pets-sound`;
+default on, low master volume.
 
 ## Errors
 

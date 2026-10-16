@@ -191,6 +191,16 @@
     return LABELS[field].find(([min]) => value > min)[1];
   }
 
+  // Which way an interaction moved the pet, for the reaction sound. Mood
+  // counts double: play costs energy but is still good news. Small moves are
+  // neutral so the sound does not claim more than the numbers show.
+  function stateTone(before, after) {
+    if (!before || !after) return 'neutral';
+    const d = (f) => (Number(after[f]) || 0) - (Number(before[f]) || 0);
+    const score = 2 * d('mood') + d('food') + d('energy') + d('health');
+    return score >= 8 ? 'positive' : score <= -8 ? 'negative' : 'neutral';
+  }
+
   function stateSummary(eff) {
     return 'mood: ' + (eff.mood_word || label('mood', eff.mood)) +
       ' · food: ' + label('food', eff.food) +
@@ -622,7 +632,7 @@
     DEFAULT_CHANNEL, LIMITS, TEMPLATES, STALE_MS, templateByKey, db, strip, counters,
     errText, isLocal, alias, restoreNames, ageDays, hoursAgo, humanDuration,
     careText, careNode, canCare, isOwner, lower,
-    initialState, effectiveState, label, stateSummary, needsAttention,
+    initialState, effectiveState, label, stateSummary, stateTone, needsAttention,
     sendSlack, farewellText, petUrl,
     enqueue, loadPetBundle, processInteraction, queueTick, runDigests,
     createPet, uploadAvatar,

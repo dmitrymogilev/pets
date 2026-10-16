@@ -14,6 +14,7 @@
     <a class="back" href="/">All pets</a>
     <h1>Create a pet</h1>
   </div>
+  <div class="top-actions"><span id="sound-toggle"></span></div>
 </header>
 
 <main>
@@ -63,11 +64,13 @@
 
 <script src="/spot.js"></script>
 <script src="/pets.js"></script>
+<script src="/sounds.js"></script>
 <script>
 (async function () {
   const { TEMPLATES, DEFAULT_CHANNEL, LIMITS, errText, lower, createPet, uploadAvatar, errorLog } = Pets;
   const errors = errorLog(document.getElementById('error-list'));
   const $ = (id) => document.getElementById(id);
+  PetsSounds.toggle($('sound-toggle'));
 
   $('default-channel').textContent = DEFAULT_CHANNEL;
   TEMPLATES.forEach((t) => $('kind').appendChild(Pets.el('option', { value: t.key, text: t.emoji + ' ' + t.name })));
@@ -155,6 +158,9 @@
       status.textContent = 'Creating...';
       const { pet, slackError } = await createPet(fields, me);
       const link = '/pet/?id=' + encodeURIComponent(pet.id);
+      // Play here, inside the submit gesture: the pet room loads without one
+      // and could not start audio. Navigation waits for the chime to end.
+      const chime = PetsSounds.play('hatch');
       if (slackError) {
         errors.add('Slack hatch message to ' + pet.channel, slackError);
         status.replaceChildren(
@@ -163,7 +169,7 @@
         );
       } else {
         status.textContent = 'Created. Opening the room...';
-        location.href = link;
+        setTimeout(() => { location.href = link; }, chime);
       }
     } catch (e) {
       errors.add('database', e);
