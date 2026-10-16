@@ -102,8 +102,8 @@ history and what goes to Slack, not the raw text.
 
 ## Slack
 
-Default channel is `#pets-private`. Messages from a `pets-local-` host are
-prefixed with `[test]`. Posts: hatch on create, one per reaction, farewell on
+Default channel is `#pets` on production and `#pets-private` on a
+`pets-local-` host, where messages are also prefixed with `[test]`. Posts: hatch on create, one per reaction, farewell on
 dismiss, and a daily digest per channel listing pets that need attention
 (food under 20, health under 40, or no visit for 3 days). The digest is
 triggered by any gallery visit; the earliest `digests` document for the

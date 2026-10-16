@@ -15,7 +15,10 @@
 (function () {
   'use strict';
 
-  const DEFAULT_CHANNEL = '#pets-private';
+  // Production posts to the public #pets channel; local previews keep using
+  // #pets-private so test traffic stays out of the public room.
+  const isLocal = () => /^pets-local-/.test(location.hostname);
+  const DEFAULT_CHANNEL = isLocal() ? '#pets-private' : '#pets';
   const LIMITS = { name: 30, description: 400, soul: 600, text: 400, imagePrompt: 600 };
   const STALE_MS = 90 * 1000;
   const HOUR = 3600 * 1000;
@@ -62,7 +65,6 @@
     return parts.join(' ');
   }
 
-  const isLocal = () => /^pets-local-/.test(location.hostname);
   const slackPrefix = () => (isLocal() ? '[test] ' : '');
 
   const lower = (s) => String(s || '').trim().toLowerCase();
