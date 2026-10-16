@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pets admin</title>
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
+<style>
+.admin-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.admin-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(220px, 2fr); gap: 4px 16px; align-items: center; }
+.admin-avatar { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; }
+.admin-avatar img { width: 56px; height: 56px; border-radius: var(--radius-sm); object-fit: cover; }
+.admin-who { display: grid; gap: 2px; min-width: 0; }
+.admin-name { font-weight: 600; text-decoration: none; }
+.admin-owner { color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
+.admin-channel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.admin-channel input { flex: 1 1 160px; width: auto; }
+@media (max-width: 640px) { .admin-row { grid-template-columns: 56px minmax(0, 1fr); } .admin-channel { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><a class="back" href="/">All pets</a></div>
+  <div class="top-actions"><label class="theme-switch" id="theme-switch"></label></div>
+</header>
+
+<main>
+<h1>Admin</h1>
+<p id="status" class="status">Loading...</p>
+<div id="errors" class="errors" hidden><h2>Something went wrong</h2><ul id="error-list"></ul></div>
+
+<section id="tools" class="panel" hidden>
+  <h2>Slack channels</h2>
+  <p class="hint">Change where a pet posts. The Spot app must be a member of the channel. Saving does not post anything.</p>
+  <ul id="list" class="admin-list"></ul>
+</section>
+</main>
+</div>
+
+<script src="/spot.js"></script>
+<script src="/pets.js"></script>
+<script>
+(async function () {
+  const { el, db, strip, avatarNode, errorLog, errText, petUrl, DEFAULT_CHANNEL } = Pets;
+  const errors = errorLog(document.getElementById('error-list'));
+  const status = document.getElementById('status');
+  const list = document.getElementById('list');
+  PetsTheme.switcher(document.getElementById('theme-switch'));
+
+  // Owner-only, client side, the same way as /test/. Spot has no per-path
+  // access control, so anyone who can visit the site can load this HTML; the
+  // tools stay hidden unless the visitor's identity matches the owner. The
+  // database accepts update() from any visitor, so this gate is a
+  // convenience, not a security boundary. Nothing links here; type /admin/.
+  const OWNER = 'dmitry.mogilev@t1a.com';
+
+  let me = null;
+  try { me = await spot.me(); } catch (e) { errors.add('identity', e); }
+  if (!me || (me.email || '').toLowerCase() !== OWNER) {
+    status.textContent = 'This page is for the site owner only.';
+    return;
+  }
+
+  let pets;
+  try {
+    pets = (await db.pets.list({ limit: 200 })).map(strip)
+      .filter((p) => !p.dismissed_at)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  } catch (e) {
+    status.textContent = 'Could not load pets.';
+    errors.add('database', e);
+    return;
+  }
+
+  status.textContent = pets.length ? pets.length + ' pet' + (pets.length === 1 ? '' : 's') : 'No pets yet.';
+  document.getElementById('tools').hidden = false;
+
+  // update() replaces the whole data object, so send every pet field back.
+  function petData(pet, channel) {
+    return { name: pet.name, kind: pet.kind, emoji: pet.emoji, avatar_url: pet.avatar_url || null,
+      description: pet.description, soul: pet.soul, care: pet.care, carers: pet.carers || [],
+      channel, dismissed_at: pet.dismissed_at || null };
+  }
+
+  pets.forEach((pet) => {
+    const input = el('input', { value: pet.channel, 'aria-label': 'Slack channel for ' + pet.name });
+    const button = el('button', { type: 'submit', class: 'btn', text: 'Save' });
+    const note = el('span', { class: 'inline-status', role: 'status' });
+    const form = el('form', { class: 'admin-channel' }, [input, button, note]);
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      let channel = input.value.trim() || DEFAULT_CHANNEL;
+      if (!/^[#CU]/.test(channel)) channel = '#' + channel;
+      input.value = channel;
+      if (channel === pet.channel) { note.textContent = 'No change.'; return; }
+      button.disabled = true;
+      note.textContent = 'Saving...';
+      try {
+        const d = await db.pets.update(pet.id, petData(pet, channel));
+        Object.assign(pet, strip(d));
+        note.textContent = 'Saved.';
+      } catch (e) {
+        errors.add('database ' + pet.name, e);
+        note.textContent = errText(e);
+      }
+      button.disabled = false;
+    });
+    list.appendChild(el('li', { class: 'admin-row' }, [
+      el('div', { class: 'admin-avatar' }, [avatarNode(pet, 56)]),
+      el('div', { class: 'admin-who' }, [
+        el('a', { class: 'admin-name', href: petUrl(pet.id), text: pet.name }),
+        el('span', { class: 'admin-owner', text: pet.owner }),
+      ]),
+      form,
+    ]));
+  });
+})();
+</script>
+</body>
+</html>
