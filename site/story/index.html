@@ -523,10 +523,13 @@ const scenes=[
     [13,`He entrusted the team "${R('[REDACTED]')}" with creating a product that would strengthen bonds and improve communication between people`],
     [19.4,'through caring for their beloved pets and the happy time spent together.']
   ]},
-  {id:'s7',dur:10,build:petopiaScene,caps:[
-    [0.2,`The team "${R('[REDACTED]')}" brought this idea to life, and so the app "Petopia" was born.`],
-    [4.2,'And so the mission found new life — among people.'],
-    [6.95,'Welcome to Petopia! Make Olympus proud!']
+  // The last take was delivered rushed: sentence-final pauses trimmed to 0.3 s and the first sentence
+  // read faster than the rest. The recording has the pauses restored and the first two sentences slowed
+  // to the pace of the earlier scenes, which is why this scene is longer than the original 10 s slot.
+  {id:'s7',dur:13.2,build:petopiaScene,caps:[
+    [0.6,`The team "${R('[REDACTED]')}" brought this idea to life, and so the app "Petopia" was born.`],
+    [5.95,'And so the mission found new life — among people.'],
+    [9.55,'Welcome to Petopia! Make Olympus proud!']
   ]},
 ];
 const total=scenes.reduce((a,s)=>a+s.dur,0);
