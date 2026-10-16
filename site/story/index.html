@@ -26,9 +26,9 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 .cap .red{display:inline-block;border:1px solid var(--clay);padding:0 .35em;color:var(--light);letter-spacing:.08em;line-height:1.2;margin:0 .1em}
 
 /* end overlay */
-.end{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(7,4,3,.55)}
+.end{position:absolute;inset:0;display:none;align-items:flex-start;justify-content:flex-end;padding:24px;pointer-events:none}
 .end.show{display:flex}
-.end button{font:inherit;font-size:2.4cqw;letter-spacing:.2em;text-transform:uppercase;color:var(--cream);background:#1a100a;border:2px solid var(--clay);padding:.6em 1.6em;cursor:pointer}
+.end button{font:inherit;font-size:1.4cqw;letter-spacing:.2em;text-transform:uppercase;color:var(--cream);background:#1a100a;border:2px solid var(--clay);padding:.6em 1.6em;cursor:pointer;pointer-events:auto}
 .end button:hover{background:var(--dark)}
 
 /* controls */
@@ -36,11 +36,23 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 .bar button{font:inherit;color:var(--cream);background:#140d08;border:1px solid #5a3418;padding:6px 12px;cursor:pointer;border-radius:3px}
 .bar button:hover{background:#2a1a10}
 .bar button[aria-pressed="true"]{border-color:var(--clay);color:var(--light)}
+.audio-status{margin:0;color:var(--light);font-size:14px;text-align:center}
 .prog{flex:1;height:6px;background:#1f130b;border-radius:3px;position:relative;cursor:pointer}
 .prog .fill{position:absolute;left:0;top:0;bottom:0;background:var(--clay);border-radius:3px;width:0}
 .prog .dot{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;background:#2d1a0e;border:1px solid #5a3418;transform:translateX(-50%);cursor:pointer}
 .prog .dot.cur{background:var(--light);border-color:var(--light)}
 .time{min-width:7ch;text-align:right;font-variant-numeric:tabular-nums}
+
+@media (max-width:600px) and (orientation:portrait){
+  .stage{width:calc(100vw - 24px);aspect-ratio:auto}
+  .stage svg{position:relative;aspect-ratio:16/9;height:auto}
+  .band{position:relative;top:auto;height:144px;padding:0 6%}
+  .cap{left:6%;right:6%;font-size:16px;line-height:1.4}
+  .bar{width:calc(100vw - 24px);flex-wrap:wrap;justify-content:space-between;gap:8px}
+  .bar button{padding:6px 9px}
+  .prog{order:1;flex-basis:100%;margin:6px 7px}
+  .end button{font-size:18px}
+}
 
 /* ---- vase drawing style ---- */
 svg text{font-family:var(--serif)}
@@ -70,6 +82,7 @@ svg text{font-family:var(--serif)}
 .scene.active{opacity:1}
 .scene:not(.on){visibility:hidden}
 .stage.paused *{animation-play-state:paused}
+.stage.awaiting-play .title,.stage.awaiting-play .title .sub,.stage.awaiting-play .title .deco{animation:none;opacity:1}
 
 /* generic */
 @keyframes drift{to{transform:translateX(-80px)}}
@@ -108,25 +121,20 @@ svg text{font-family:var(--serif)}
 .on .odysseus .arm-r{animation:raiseR 1.6s 1.6s ease-in-out forwards}
 .on .odysseus .arm-l{animation:raiseL 1.6s 1.6s ease-in-out forwards}
 @keyframes raiseR{to{transform:rotate(-150deg)}} @keyframes raiseL{to{transform:rotate(-135deg)}}
-.on .argos .dhead{animation:lookup 1.6s 1.6s ease-in-out forwards} @keyframes lookup{to{transform:rotate(-14deg)}}
-.on .argos .tail{animation:wag .35s ease-in-out infinite alternate}
 .on .glow{opacity:0;animation:glowin 2s 4.5s forwards} @keyframes glowin{to{opacity:1}}
 .on .ray{opacity:0;animation:fadein 1.8s 5s forwards}
-.on .shore-dog .dhead{--r:-8deg}
 
 /* s3 olympus */
 .on .flash{animation:flash 2.4s .3s forwards}
 .on .zeus .arm-r{animation:zeusbolt 1.2s .4s ease-out forwards} @keyframes zeusbolt{to{transform:rotate(-165deg)}}
 .on .map{transform:scaleX(0);animation:unroll 1.6s 2.2s ease-out forwards}
-.on .pointer .arm-r{animation:pointR 1s 3.4s ease-out forwards} @keyframes pointR{to{transform:rotate(-55deg)}}
-.on .pointer .fore-r{animation:pointF 1s 3.4s ease-out forwards} @keyframes pointF{to{transform:rotate(-30deg)}}
+.on .pointer .arm-r{animation:pointR 1s 3.4s ease-out forwards} @keyframes pointR{to{transform:rotate(-38deg)}}
+.on .pointer .fore-r{animation:pointF 1s 3.4s ease-out forwards} @keyframes pointF{to{transform:rotate(55deg)}}
 .on .tablet{opacity:0;transform:scale(0);animation:popin .9s 4.8s cubic-bezier(.3,1.4,.5,1) forwards}
 .on .foes-hint{opacity:0;animation:fadein 1.5s 6.5s forwards}
 
 /* s4 twenty years */
-.on .orbit{animation:spin 10s linear forwards}
-.on .sitter .tail{animation:wagsit 1s ease-in-out infinite alternate}
-.on .sitter .eye{transform-box:fill-box;transform-origin:center;animation:blink 3.2s infinite}
+.on .orbit{animation:spin 7.5s linear forwards}
 .on .foes{animation:foesin 7.5s 2.2s ease-in-out forwards}
 @keyframes foesin{0%{transform:translateX(620px)}30%{transform:translateX(0)}55%{transform:translateX(0)}100%{transform:translateX(640px)}}
 .on .foes .leg-l{animation:swingA .45s ease-in-out 5 alternate 2.2s} .on .foes .leg-r{animation:swingB .45s ease-in-out 5 alternate 2.2s}
@@ -139,19 +147,6 @@ svg text{font-family:var(--serif)}
 .on .walker{animation:walkin 3s 2.6s linear forwards} @keyframes walkin{from{transform:translateX(0)}to{transform:translateX(250px)}}
 .on .walker .leg-l{animation:swingA .5s 2.6s ease-in-out 6 alternate} .on .walker .leg-r{animation:swingB .5s 2.6s ease-in-out 6 alternate}
 .on .walker .arm-l{animation:armA .5s 2.6s ease-in-out 6 alternate} .on .walker .arm-r{animation:armB .5s 2.6s ease-in-out 6 alternate}
-.on .walker .arm-r{animation:armB .5s 2.6s ease-in-out 6 alternate,openR 1s 6s ease-out forwards}
-.on .walker .arm-l{animation:armA .5s 2.6s ease-in-out 6 alternate,openL 1s 6s ease-out forwards}
-@keyframes openR{to{transform:rotate(-70deg)}} @keyframes openL{to{transform:rotate(-55deg)}}
-.on .walker .fore-r{animation:openF 1s 6s ease-out forwards} .on .walker .fore-l{animation:openF 1s 6s ease-out forwards} @keyframes openF{to{transform:rotate(-25deg)}}
-.on .dog-sit{animation:hide 0s 4.2s forwards} @keyframes hide{to{opacity:0}}
-.on .dog-run{opacity:0;animation:show 0s 4.2s forwards,runin 1.9s 4.2s linear forwards} @keyframes show{to{opacity:1}}
-@keyframes runin{from{transform:translateX(0)}to{transform:translateX(-230px)}}
-.on .dog-run .bounce{animation:bounce .32s 4.2s ease-in-out 6 alternate} @keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-26px)}}
-.on .dog-run .dleg-fl,.on .dog-run .dleg-br{animation:dlegA .32s 4.2s ease-in-out 6 alternate}
-.on .dog-run .dleg-fr,.on .dog-run .dleg-bl{animation:dlegB .32s 4.2s ease-in-out 6 alternate}
-.on .dog-run .tail{animation:wag .25s ease-in-out infinite alternate}
-.on .dog-run .dhead{animation:lookup 1s 6s forwards}
-.on .hearts path{opacity:0;animation:heart 2.6s ease-out infinite;animation-delay:calc(6.2s + var(--d))}
 
 /* s6 to earth */
 .on .zeus2 .arm-r{animation:bless 1.6s 1s ease-in-out forwards} @keyframes bless{to{transform:rotate(-48deg)}}
@@ -160,8 +155,8 @@ svg text{font-family:var(--serif)}
 @keyframes sparkfall{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(300px);opacity:0}}
 .on .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker .6s ease-in-out infinite}
 .on .scroll{transform:scaleX(0);animation:unroll 1.4s 5.2s ease-out forwards}
-.on .worker .fore-r{animation:draw .9s ease-in-out infinite alternate} @keyframes draw{from{transform:rotate(var(--r))}to{transform:rotate(calc(var(--r) + 14deg))}}
-.on .hammer .arm-r{animation:hammer .7s ease-in-out infinite alternate} @keyframes hammer{from{transform:rotate(-120deg)}to{transform:rotate(-70deg)}}
+.on .worker .fore-r{animation:draw 1.8s ease-in-out infinite alternate} @keyframes draw{from{transform:rotate(var(--r))}to{transform:rotate(calc(var(--r) + 4deg))}}
+.on .artisan .fore-r{animation:draw 2.4s ease-in-out infinite alternate}
 
 /* s7 petopia */
 .on .phone{transform:scale(0);animation:phonein 1.3s .3s cubic-bezier(.3,1.3,.5,1) forwards} @keyframes phonein{to{transform:scale(1)}}
@@ -170,27 +165,57 @@ svg text{font-family:var(--serif)}
 .on .fromL{animation:fromL 3s .6s ease-out forwards} @keyframes fromL{from{transform:translateX(-520px)}to{transform:translateX(0)}}
 .on .fromR{animation:fromR 3s .6s ease-out forwards} @keyframes fromR{from{transform:translateX(520px)}to{transform:translateX(0)}}
 .on .fromL .leg-l,.on .fromR .leg-l{animation:swingA .5s .6s ease-in-out 6 alternate} .on .fromL .leg-r,.on .fromR .leg-r{animation:swingB .5s .6s ease-in-out 6 alternate}
-.on .fromL .dleg-fl,.on .fromL .dleg-br{animation:dlegA .36s .6s ease-in-out 8 alternate} .on .fromL .dleg-fr,.on .fromL .dleg-bl{animation:dlegB .36s .6s ease-in-out 8 alternate}
-.on .fromL .tail{animation:wag .3s ease-in-out infinite alternate}
 .on .cat{opacity:0;animation:fadein 1s 3.4s forwards}
 .on .hearts2 path{opacity:0;animation:heart 3s ease-out infinite;animation-delay:calc(3.6s + var(--d))}
 .on .olive{opacity:0;animation:fadein 1.5s 1s forwards}
+.on .companion .tail{animation:wag .5s ease-in-out infinite alternate}
+.on .companion .eye{transform-box:fill-box;transform-origin:center;animation:blink 3.2s infinite}
+
+/* s8 follows the homecoming: the treasure is revealed before the mission continues */
+.reveal-dog,.embrace-hands,.reveal-light{opacity:0}
+.on .chest-opening .lid{animation:open-chest 1.8s 1.5s ease-in-out forwards}
+@keyframes open-chest{to{transform:rotate(105deg)}}
+.on .reveal-light{animation:reveal-light 4s 2s ease-in-out forwards}
+@keyframes reveal-light{0%,100%{opacity:0}30%,65%{opacity:.32}}
+.on .reveal-lean{animation:lean-to-chest 6.4s ease-in-out forwards}
+@keyframes lean-to-chest{0%,100%{transform:rotate(0)}25%,50%{transform:rotate(18deg)}75%{transform:rotate(4deg)}}
+.on .reveal-odysseus .arm-r{animation:reach-and-cradle 6.4s ease-in-out forwards}
+@keyframes reach-and-cradle{0%{transform:rotate(10deg)}25%,50%{transform:rotate(-45deg)}100%{transform:rotate(-65deg)}}
+.on .reveal-odysseus .arm-l{animation:cradle-arm 1.5s 4.9s ease-in-out forwards}
+@keyframes cradle-arm{to{transform:rotate(-65deg)}}
+.on .reveal-odysseus .fore-r{animation:cradle-right 1.5s 4.9s ease-in-out forwards}
+@keyframes cradle-right{to{transform:rotate(75deg)}}
+.on .reveal-odysseus .fore-l{animation:cradle-left 1.5s 4.9s ease-in-out forwards}
+@keyframes cradle-left{to{transform:rotate(30deg)}}
+.on .reveal-dog{animation:out-of-chest 3.1s 3.2s ease-in-out forwards}
+@keyframes out-of-chest{
+  0%{opacity:1;transform:translate(0,20px) scale(.55)}
+  28%{opacity:1;transform:translate(0,-85px) scale(1)}
+  58%{opacity:1;transform:translate(-80px,-150px) rotate(-15deg)}
+  100%{opacity:1;transform:translate(-85px,-100px) rotate(-8deg)}
+}
+.on .reveal-dog .tail{animation:wag .28s 3.2s ease-in-out infinite alternate}
+.on .reveal-dog .eye{transform-box:fill-box;transform-origin:center;animation:blink 3.2s 5s infinite}
+.on .embrace-hands{animation:fadein .7s 5.8s forwards}
+.on .reunion-hearts path{opacity:0;animation:heart 3.5s ease-out infinite;animation-delay:calc(6.5s + var(--d))}
 </style>
 </head>
 <body>
-<div class="stage" id="stage">
+<div class="stage awaiting-play" id="stage">
   <svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-label="Petopia: the story of the mission"></svg>
   <div class="band"><div class="cap" id="capA"></div><div class="cap" id="capB"></div></div>
   <div class="end" id="end"><button id="replay">Replay</button></div>
 </div>
 <div class="bar">
-  <button id="play" aria-label="Play or pause">Pause</button>
+  <button id="play" aria-label="Play or pause">Play</button>
   <button id="restart">Restart</button>
   <div class="prog" id="prog"><div class="fill" id="fill"></div></div>
   <div class="time" id="time">0:00</div>
-  <button id="voice" aria-pressed="false" title="Read captions aloud with the browser voice">Voice</button>
+  <button id="voice" aria-pressed="true" title="Turn the recorded narration on or off">Voice</button>
   <button id="full">Full</button>
 </div>
+<audio id="narration" src="narration.m4a" preload="auto"></audio>
+<p id="audioStatus" class="audio-status" role="status" hidden></p>
 
 <script>
 /* ---------- drawing helpers (red-figure vase style, flat clay silhouettes with black detail) ---------- */
@@ -200,7 +225,10 @@ const svgNS = 'http://www.w3.org/2000/svg';
 function fig(o){
   const s=o.s||1, fl=o.flip?-1:1;
   const [aL,aR]=o.arms||[0,0], [fL,fR]=o.fore||[0,0], [lL,lR]=o.legs||[0,0], [sL,sR]=o.shins||[0,0];
-  const arm=(side,a,f,prop='')=>`<g transform="translate(${side==='l'?-22:22},-160)"><g class="arm arm-${side}" style="--r:${a}deg"><line x1="0" y1="0" x2="0" y2="46"/><g transform="translate(0,46)"><g class="fore fore-${side}" style="--r:${f}deg"><line x1="0" y1="0" x2="0" y2="42"/><circle cx="0" cy="46" r="7"/>${prop}</g></g></g></g>`;
+  // Opt-in articulated silhouettes keep both arms and five-finger hands readable
+  // in the Olympus workshop without changing the other scenes' characters.
+  const hand=`<g class="hand"><path d="M-5,39 L5,39 L6,45 L6,55 Q6,58 4,58 L3,58 L3,60 Q1,62 0,59 Q-2,62 -3,59 L-4,57 Q-7,59 -7,55 L-8,49 L-11,46 Q-13,42 -10,42 L-5,46Z"/><path class="ink" style="stroke-width:1.1" d="M3,49 L3,56 M0,50 L0,57 M-3,50 L-3,56 M-6,47 Q-2,45 3,46"/></g>`;
+  const arm=(side,a,f,prop='')=>`<g transform="translate(${(side==='l'?-1:1)*(o.preciseHands?28:22)},-160)"><g class="arm arm-${side}" style="--r:${a}deg">${o.preciseHands?'<path d="M-7,0 Q-10,18 -6,44 Q0,51 6,44 Q9,22 7,0Z"/>':'<line x1="0" y1="0" x2="0" y2="46"/>'}<g transform="translate(0,46)"><g class="fore fore-${side}" style="--r:${f}deg">${o.preciseHands?`<path d="M-6,0 Q-8,20 -5,40 L5,40 Q8,20 6,0Z"/><path class="ink" style="stroke-width:1.5" d="M-4,3 Q0,6 4,3"/><g transform="scale(${side==='l'?-1:1},1)">${hand}</g>`:'<line x1="0" y1="0" x2="0" y2="42"/><circle cx="0" cy="46" r="7"/>'}${prop}</g></g></g></g>`;
   const leg=(side,a,f)=>`<g transform="translate(${side==='l'?-11:11},-95)"><g class="leg leg-${side}" style="--r:${a}deg"><line x1="0" y1="0" x2="0" y2="50"/><g transform="translate(0,50)"><g class="shin shin-${side}" style="--r:${f}deg"><line x1="0" y1="0" x2="0" y2="40"/><path d="M-7,36 L24,38 L24,46 L-8,46Z"/></g></g></g></g>`;
   const torso = o.long
     ? `<path d="M-26,-168 L26,-168 L31,-110 L48,-2 L-48,-2 L-31,-110Z"/><path class="ink" d="M-28,-112 L28,-112 M-12,-104 L-18,-8 M0,-104 L0,-8 M12,-104 L18,-8"/>`
@@ -216,10 +244,10 @@ function fig(o){
     if(o.helmet) head+=`<path d="M-20,-192 C-22,-222 22,-222 20,-192 L20,-172 L11,-172 L8,-186 L-8,-186 L-11,-172 L-20,-172Z"/><path class="ink" d="M-20,-192 L20,-192"/><path class="inkfill" d="M-4,-216 C4,-242 30,-248 50,-232 C34,-234 24,-226 18,-212Z M-4,-216 C-18,-222 -30,-208 -36,-190 C-26,-200 -16,-208 -2,-210Z"/>`;
     else if(!o.bun) head+=`<path class="ink" d="M-16,-197 L16,-197"/>`;
   }
-  return `<g class="fig ${o.cls||''}" transform="translate(${o.x},${o.y}) scale(${s*fl},${s})">${arm('l',aL,fL,o.propL||'')}${leg('l',lL,sL)}${torso}${leg('r',lR,sR)}${head}${arm('r',aR,fR,o.propR||'')}</g>`;
+  return `<g class="fig ${o.cls||''}" transform="translate(${o.x},${o.y}) scale(${s*fl},${s})">${o.preciseHands?'':arm('l',aL,fL,o.propL||'')}${leg('l',lL,sL)}${torso}${leg('r',lR,sR)}${head}${o.preciseHands?arm('l',aL,fL,o.propL||''):''}${arm('r',aR,fR,o.propR||'')}</g>`;
 }
 
-// A dog (Argos). Origin at the ground, facing +x. pose: 'stand' | 'sit'
+// Argus. Origin at the ground, facing +x. pose: 'stand' | 'sit'
 function dog(o){
   const s=o.s||1, fl=o.flip?-1:1;
   const head=(x,y,r=0)=>`<g transform="translate(${x},${y})"><g class="dhead" style="--r:${r}deg"><path d="M-16,8 C-12,-8 2,-22 16,-26 L28,-2Z"/><circle cx="18" cy="-24" r="17"/><path d="M28,-33 L54,-27 C59,-23 59,-13 53,-10 L26,-7Z"/><ellipse class="ear" cx="5" cy="-16" rx="7" ry="15" transform="rotate(14 5 -16)"/><circle class="inkfill eye" cx="27" cy="-29" r="2.8"/><circle class="inkfill" cx="55" cy="-21" r="3.4"/><path class="ink" d="M38,-12 C44,-10 50,-12 54,-15"/></g></g>`;
@@ -327,19 +355,34 @@ function shoreScene(returnVariant){
       <circle class="glow" cx="1330" cy="170" r="150" fill="url(#glow)"/>
       <g class="ray"><path class="light" opacity=".35" d="M1330,170 L830,470 L870,480Z"/><path class="light" opacity=".2" d="M1330,170 L790,450 L830,470Z"/></g>
       ${sea}${ship({x:360,y:600,s:.85})}${ground()}
-      ${dog({x:690,y:650,s:1.05,cls:'argos shore-dog'})}
+      ${chest(670,650)}
       ${fig({x:830,y:650,s:1.15,cls:'odysseus',helmet:true,beard:true,arms:[10,-10],fore:[-10,-20]})}
       <circle class="clay" cx="790" cy="560" r="36"/><circle class="lnk" cx="790" cy="560" r="24"/><circle class="ink" cx="790" cy="560" r="8"/>`;
   }
   return `${stars(40,11)}${mount}${sea}${ship({x:360,y:600,s:.85,cls:'ship2'})}${ground()}
       <g class="walker">${fig({x:470,y:650,s:1.15,cls:'odysseus2',helmet:true,beard:true,arms:[10,-10],fore:[-10,-20]})}</g>
-      <g class="dog-sit">${dog({x:1080,y:650,s:1.05,flip:true,pose:'sit'})}</g>
-      <g class="dog-run">${dog({x:1080,y:650,s:1.05,flip:true,pose:'stand'})}</g>
-      ${hearts(830,420)}`;
+      ${chest(1080,650)}`;
+}
+
+function chest(x,y,reveal=false){
+  return `<g class="chest ${reveal?'chest-opening':''}" transform="translate(${x},${y})">
+    <rect class="ink" x="-73" y="-65" width="146" height="26" rx="3"/>
+    <g transform="translate(75,-62)"><g class="lid">
+      <rect class="clay" x="-150" y="-24" width="150" height="24" rx="4"/>
+      <rect class="ink" x="-141" y="-18" width="132" height="15"/>
+      <rect x="-141" y="-18" width="132" height="15" fill="url(#meander-s)"/>
+      <path class="lnk" d="M-150,0 H0"/>
+      <rect class="cream" x="-84" y="-4" width="18" height="24" rx="2"/>
+      <circle class="ink" cx="-75" cy="7" r="3"/>
+    </g></g>
+    ${reveal?`<g class="reveal-dog">${dog({x:0,y:0,s:1.05,flip:true,pose:'stand'})}</g>`:''}
+    <rect class="clay" x="-75" y="-62" width="150" height="62" rx="3"/>
+    <path class="lnk" d="M-75,-61 H75 M-55,-58 V-4 M55,-58 V-4 M-73,-9 H73"/>
+  </g>`;
 }
 
 function olympusScene(){
-  const god=(x,arms,fore,cls='')=>fig({x,y:645,s:1.05,cls:'god '+cls,hood:true,long:true,arms,fore});
+  const god=(x,arms,fore,cls='')=>fig({x,y:645,s:1.05,cls:'god '+cls,hood:true,long:true,preciseHands:true,arms,fore});
   return `${stars(30,3)}
     <rect class="light flash" x="0" y="0" width="1600" height="900" opacity="0"/>
     <rect class="dark" x="110" y="96" width="1380" height="34"/><rect x="120" y="104" width="1360" height="18" fill="url(#meander-s)"/>
@@ -349,11 +392,11 @@ function olympusScene(){
     <rect class="clay" x="360" y="400" width="24" height="230"/><rect class="clay" x="360" y="400" width="130" height="16"/>
     <rect class="clay" x="340" y="556" width="170" height="22"/><rect class="clay" x="350" y="578" width="18" height="72"/><rect class="clay" x="480" y="578" width="18" height="72"/>
     <rect class="clay" x="470" y="610" width="80" height="40"/>
-    ${fig({x:430,y:650,s:1.15,cls:'zeus',beard:true,long:true,arms:[-80,-100],fore:[-10,-40],legs:[-85,-85],shins:[82,82],propR:'<path class="light" transform="translate(0,46) rotate(170)" d="M0,0 L-9,26 L3,24 L-7,56 L15,18 L4,20 L13,0Z"/>'})}
+    ${fig({x:430,y:650,s:1.15,cls:'zeus',beard:true,long:true,preciseHands:true,arms:[35,-100],fore:[-45,-40],legs:[-85,-85],shins:[82,82],propR:'<path style="fill:var(--light)" transform="translate(0,60)" d="M0,0 L-9,26 L3,24 L-7,56 L15,18 L4,20 L13,0Z"/>'})}
     <ellipse class="clay" cx="850" cy="585" rx="190" ry="26"/><rect class="clay" x="790" y="590" width="14" height="60"/><rect class="clay" x="896" y="590" width="14" height="60"/>
     <path class="lnk" d="M700,585 C760,600 940,600 1000,585"/>
-    ${god(720,[-30,-40],[-20,-30])}${god(850,[-30,-30],[-20,-20],'pointer')}${god(980,[-30,-70],[-10,-80])}
-    <g transform="translate(705,560)"><g class="map"><rect class="cream" x="0" y="0" width="290" height="22" rx="3"/><path d="M20,11 C80,2 120,20 170,8 S240,16 270,10" fill="none" stroke="#7a3a14" stroke-width="2" stroke-dasharray="6 5"/><path d="M262,4 l10,14 M272,4 l-10,14" stroke="#7a3a14" stroke-width="2.5"/><circle cx="20" cy="11" r="3.5" fill="#7a3a14"/></g></g>
+    ${god(720,[30,-30],[-45,25])}${god(850,[35,-35],[-50,50],'pointer')}${god(980,[30,-75],[-45,-35])}
+    <g transform="translate(705,593)"><g class="map"><rect class="cream" x="0" y="0" width="290" height="22" rx="3"/><path d="M20,11 C80,2 120,20 170,8 S240,16 270,10" fill="none" stroke="#7a3a14" stroke-width="2" stroke-dasharray="6 5"/><path d="M262,4 l10,14 M272,4 l-10,14" stroke="#7a3a14" stroke-width="2.5"/><circle cx="20" cy="11" r="3.5" fill="#7a3a14"/></g></g>
     ${tabletSVG(850,330,420,'[REDACTED]','A MISSION OF THE GODS','tablet')}`;
 }
 
@@ -369,7 +412,7 @@ function yearsScene(){
     <g class="ink"><circle cx="1320" cy="380" r="4"/><circle cx="1370" cy="420" r="4"/><circle cx="1290" cy="440" r="4"/><circle cx="1420" cy="390" r="4"/></g></g>
     ${ground()}
     ${guard(640)}${guard(800)}${guard(960)}
-    ${dog({x:800,y:650,s:1.35,cls:'sitter',pose:'sit'})}
+    ${chest(800,650)}
     <g class="foes">${foe(1250)}${foe(1360)}${foe(1470)}</g>
     <text class="years cream" x="800" y="150" text-anchor="middle" font-size="40" letter-spacing="8">YEAR I</text>`;
 }
@@ -377,18 +420,20 @@ function yearsScene(){
 function earthScene(){
   const sparks=[0,.5,1,1.5,2].map((d,i)=>`<circle class="spark light" style="--d:${d}s" cx="${760+i*30}" cy="${300+i*15}" r="4"/>`).join('');
   return `${stars(24,9)}
-    ${fig({x:800,y:360,s:1.2,cls:'zeus2',beard:true,long:true,arms:[-30,-10],fore:[-30,10]})}
+    ${fig({x:800,y:360,s:1.2,cls:'zeus2',beard:true,long:true,preciseHands:true,arms:[35,-35],fore:[-45,45]})}
     <g class="dark"><ellipse cx="800" cy="330" rx="230" ry="42"/><ellipse cx="600" cy="350" rx="140" ry="34"/><ellipse cx="1000" cy="350" rx="150" ry="34"/></g>
     <g class="clay" opacity=".65"><ellipse cx="800" cy="318" rx="150" ry="22"/><ellipse cx="640" cy="334" rx="80" ry="16"/><ellipse cx="960" cy="334" rx="80" ry="16"/></g>
+    <image class="team-vase" href="assets/team-vase.png" x="755" y="219" width="90" height="99" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Greek vase in front of Zeus, decorated with the team [REDACTED] and the council of gods"/>
     <path class="beam light" d="M850,250 L600,570 L1040,570Z"/>${sparks}
     ${column(130,180,650)}${olive(1100,200,1.1,-10)}
     <rect class="clay" x="1240" y="520" width="8" height="130"/><path class="clay" d="M1200,520 C1200,560 1290,560 1290,520Z"/><rect class="clay" x="1210" y="640" width="70" height="12"/>
     <path class="flame light" d="M1244,522 C1220,500 1230,470 1244,450 C1248,470 1262,474 1258,500 C1272,480 1274,500 1266,522Z"/>
     <rect class="clay" x="600" y="572" width="400" height="20"/><path class="clay" d="M620,592 L600,650 L640,650 L650,592Z M980,592 L1000,650 L960,650 L950,592Z"/><path class="lnk" d="M600,600 L1000,600"/>
-    ${fig({x:660,y:650,s:1.1,cls:'worker',arms:[-80,-70],fore:[-30,-40],propR:'<rect class="cream" x="-20" y="30" width="56" height="16" rx="6" transform="rotate(-20)"/><rect class="cream" x="-10" y="44" width="56" height="16" rx="6" transform="rotate(-20)"/>'})}
-    ${fig({x:800,y:650,s:1.1,cls:'worker',long:true,bun:true,arms:[-60,-70],fore:[14,22]})}
-    ${fig({x:950,y:650,s:1.1,flip:true,cls:'hammer',beard:true,arms:[-70,-100],fore:[-40,-30],propR:'<rect class="clay" x="-4" y="-40" width="8" height="90"/><rect class="clay" x="-16" y="-50" width="32" height="18"/>'})}
-    <g transform="translate(800,570)"><g class="scroll"><rect class="cream" x="-150" y="-70" width="300" height="60" rx="4"/><rect class="clay" x="-156" y="-74" width="12" height="68" rx="5"/><rect class="clay" x="144" y="-74" width="12" height="68" rx="5"/>
+    ${fig({x:640,y:650,s:1.1,cls:'worker',preciseHands:true,arms:[30,-30],fore:[-45,25]})}
+    ${fig({x:800,y:650,s:1.1,cls:'worker',long:true,bun:true,preciseHands:true,arms:[35,-35],fore:[-50,50]})}
+    ${fig({x:960,y:650,s:1.1,flip:true,cls:'artisan',beard:true,preciseHands:true,arms:[30,-30],fore:[-45,25]})}
+    ${dog({x:1080,y:650,s:.85,flip:true,cls:'companion',pose:'stand'})}
+    <g transform="translate(800,646)"><g class="scroll"><rect class="cream" x="-150" y="-70" width="300" height="60" rx="4"/><rect class="clay" x="-156" y="-74" width="12" height="68" rx="5"/><rect class="clay" x="144" y="-74" width="12" height="68" rx="5"/>
       <rect x="-28" y="-62" width="56" height="44" rx="6" fill="none" stroke="#7a3a14" stroke-width="2"/><rect x="-22" y="-56" width="44" height="30" fill="none" stroke="#7a3a14" stroke-width="1.5"/>
       <g fill="#7a3a14"><circle cx="-5" cy="-38" r="5"/><circle cx="-13" cy="-46" r="2.5"/><circle cx="-7" cy="-50" r="2.5"/><circle cx="0" cy="-50" r="2.5"/><circle cx="4" cy="-46" r="2.5"/></g>
       <path d="M-130,-40 H-50 M-130,-30 H-70 M60,-40 H130 M60,-30 H120 M60,-20 H100" stroke="#7a3a14" stroke-width="2"/></g></g>`;
@@ -407,10 +452,29 @@ function petopiaScene(){
       <text class="light" x="0" y="130" text-anchor="middle" font-size="16" letter-spacing="3">CARE · SHARE · PLAY</text></g>
     </g></g>
     ${ground()}
-    <g class="fromL">${fig({x:420,y:650,s:1.1,arms:[-20,-40],fore:[10,-30]})}${dog({x:540,y:650,s:1,pose:'stand'})}<path class="lnk" d="M445,520 C500,540 540,560 575,566"/></g>
-    <g class="fromR">${fig({x:1180,y:650,s:1.1,flip:true,long:true,bun:true,arms:[-20,-40],fore:[10,-30]})}</g>
+    <g class="fromL">${fig({x:420,y:650,s:1.1,preciseHands:true,arms:[30,-30],fore:[-45,25]})}${dog({x:565,y:650,s:1,cls:'companion',pose:'stand'})}</g>
+    <g class="fromR">${fig({x:1180,y:650,s:1.1,flip:true,long:true,bun:true,preciseHands:true,arms:[30,-35],fore:[-45,50]})}</g>
     ${cat({x:1050,y:650,s:1,flip:true})}
     ${hearts(800,300,'hearts2')}`;
+}
+
+function reunionScene(){
+  return `${stars(24,11)}
+    <circle class="dark" cx="1200" cy="345" r="120" opacity=".55"/>
+    <path class="dark" d="M0,560 L180,390 L300,500 L410,420 L540,560Z"/>
+    <rect class="dark" x="0" y="560" width="1600" height="90" opacity=".55"/>
+    ${waves(562)}${ground()}${olive(160,230,.8,-12)}
+    <ellipse class="reveal-light" cx="935" cy="540" rx="220" ry="160" fill="url(#glow)"/>
+    <g transform="translate(720,650)"><g class="reveal-lean">
+      ${fig({x:0,y:0,s:1.15,cls:'reveal-odysseus',helmet:true,beard:true,arms:[10,10],fore:[-10,-20]})}
+    </g></g>
+    ${chest(935,650,true)}
+    <g class="embrace-hands">
+      <path d="M749,477 Q780,528 818,520 L858,512" fill="none" stroke="var(--clay)" stroke-width="15" stroke-linecap="round"/>
+      <path class="lnk" d="M774,513 Q794,532 819,527 L849,520"/>
+      <circle class="clay" cx="858" cy="512" r="9"/>
+    </g>
+    ${hearts(765,350,'reunion-hearts')}`;
 }
 
 function titleScene(){
@@ -424,21 +488,53 @@ function titleScene(){
     </g>`;
 }
 
+function introScene(){
+  return `${stars(30,23)}
+    <image href="assets/team-vase.png" x="620" y="220" width="360" height="396" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The team [REDACTED] on a decorated Greek vase"/>
+    ${olive(230,530,.9,-8)}<g transform="translate(1370,530) scale(-1,1)">${olive(0,0,.9,-8)}</g>`;
+}
+
+// Full decoded ElevenLabs introduction; the original story begins after it ends.
+const introDuration=37.14612244897959;
 const R=s=>`<span class="red">${s}</span>`;
 const scenes=[
-  {id:'s1',dur:5,build:titleScene,caps:[[1.2,'Based on the legend of Odysseus and the treasure he left on Ithaca.']]},
-  {id:'s2',dur:10,build:()=>shoreScene(false),caps:[[0.6,'Before leaving Ithaca, Odysseus turned to the gods on Olympus with a request: to keep safe a treasure dear to his heart.']]},
-  {id:'s3',dur:12,build:olympusScene,caps:[[0.6,`Zeus heard his prayers and created a special mission among the gods. The project was named ${R('[REDACTED]')}.`],[6.6,'The gods kept the mission secret. Odysseus had many enemies on Ithaca, and they would destroy the treasure if they found it.']]},
-  {id:'s4',dur:11,build:yearsScene,tick:yearsTick,caps:[[0.6,'For twenty years, the mission had one task: protect the treasure until the day Odysseus came home.']]},
-  {id:'s5',dur:10,build:()=>shoreScene(true),caps:[[0.6,'The gods succeeded. When Odysseus returned, he found his treasure safe and sound.']]},
-  {id:'s6',dur:12,build:earthScene,caps:[[0.6,'Seeing the joy in his eyes, and how much the warmth and devotion of a small creature mean to people, Zeus did not close the mission. He brought it down to earth, to humankind.'],[6.8,`He entrusted the ${R('[REDACTED]')} team with a product that strengthens bonds between people through caring for their pets and the happy time spent together.`]]},
-  {id:'s7',dur:9,build:petopiaScene,caps:[[0.6,`The ${R('[REDACTED]')} team brought the idea to life, and so Petopia was born.`],[5,'And so the mission found new life, among people.']]},
+  {id:'intro',dur:introDuration,build:introScene,caps:[]},
+  {id:'s1',dur:3,build:titleScene,caps:[
+    [0.6,'Based on the legend of Odysseus.']
+  ]},
+  {id:'s2',dur:8,build:()=>shoreScene(false),caps:[
+    [0.4,'Before leaving Ithaca, Odysseus turned to the gods on Olympus with a request: to keep safe a treasure dear to his heart.']
+  ]},
+  {id:'s3',dur:17,build:olympusScene,caps:[
+    [0.4,`Zeus heard Odysseus's prayers and created a special mission among the gods. The project was named "${R('[REDACTED]')}".`],
+    [8.4,"The gods kept the mission secret, fearing Odysseus's many enemies who had stayed behind on Ithaca,"],
+    [14.1,'afraid they would destroy the treasure entrusted to them.']
+  ]},
+  {id:'s4',dur:8,build:yearsScene,tick:yearsTick,caps:[
+    [0.4,"For twenty years, the mission's task was to protect Odysseus's treasure until the moment he returned home to Ithaca."]
+  ]},
+  {id:'s5',dur:7,build:()=>shoreScene(true),caps:[
+    [0.4,'The gods succeeded, and when Odysseus returned, he found his treasure safe and sound.']
+  ]},
+  {id:'s8',dur:12,build:reunionScene,caps:[[6.5,'"Argus!"']]},
+  {id:'s6',dur:25,build:earthScene,caps:[
+    [0.4,"Seeing the joy in Odysseus's eyes, and realizing how much the warmth and devotion of a small creature mean to people,"],
+    [7.6,'Zeus decided not to close the mission but to bring it down to earth, to humankind.'],
+    [13,`He entrusted the team "${R('[REDACTED]')}" with creating a product that would strengthen bonds and improve communication between people`],
+    [19.4,'through caring for their beloved pets and the happy time spent together.']
+  ]},
+  {id:'s7',dur:10,build:petopiaScene,caps:[
+    [0.2,`The team "${R('[REDACTED]')}" brought this idea to life, and so the app "Petopia" was born.`],
+    [4.2,'And so the mission found new life — among people.'],
+    [6.95,'Welcome to Petopia! Make Olympus proud!']
+  ]},
 ];
 const total=scenes.reduce((a,s)=>a+s.dur,0);
 
 function roman(n){const m=[[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];let r='';for(const [v,k] of m){while(n>=v){r+=k;n-=v}}return r}
 function yearsTick(local){
-  const n=Math.max(1,Math.min(20,1+Math.floor(local/9.5*20)));
+  const duration=scenes.find(s=>s.id==='s4').dur;
+  const n=Math.max(1,Math.min(20,1+Math.floor(local/(duration-0.5)*20)));
   const el=document.querySelector('#s4 .years'); if(el && el.dataset.n!=n){el.dataset.n=n;el.textContent='YEAR '+roman(n)}
 }
 
@@ -468,19 +564,20 @@ const stage=document.getElementById('stage'), els=scenes.map(s=>document.getElem
 const capEls=[document.getElementById('capA'),document.getElementById('capB')];
 const fill=document.getElementById('fill'), timeEl=document.getElementById('time'), playBtn=document.getElementById('play');
 const endEl=document.getElementById('end'), voiceBtn=document.getElementById('voice'), prog=document.getElementById('prog');
-let t=0, playing=false, last=0, cur=-1, capIdx=-1, capSlot=0, voice=false, raf=0;
+const narration=document.getElementById('narration'), audioStatus=document.getElementById('audioStatus');
+let t=0, playing=false, cur=-1, capIdx=-1, capSlot=0, voice=true, raf=0, playRequest=0;
 const dots=scenes.map((s,i)=>{const d=document.createElement('div');d.className='dot';d.title=s.id;d.style.left=(scenes.slice(0,i).reduce((a,x)=>a+x.dur,0)/total*100)+'%';d.addEventListener('click',e=>{e.stopPropagation();seek(scenes.slice(0,i).reduce((a,x)=>a+x.dur,0));});prog.appendChild(d);return d;});
 prog.addEventListener('click',e=>{const r=prog.getBoundingClientRect();seek((e.clientX-r.left)/r.width*total)});
 
 const anims=el=>el.getAnimations({subtree:true}).filter(a=>!(window.CSSTransition&&a instanceof CSSTransition));
+const formatTime=seconds=>{const whole=Math.floor(seconds);return Math.floor(whole/60)+':'+String(whole%60).padStart(2,'0')};
 function sceneAt(time){let acc=0;for(let i=0;i<scenes.length;i++){if(time<acc+scenes[i].dur)return[i,acc];acc+=scenes[i].dur}return[scenes.length-1,acc-scenes[scenes.length-1].dur]}
 function setCaption(htmlText){
   capEls[capSlot].classList.remove('show'); capSlot^=1;
   const el=capEls[capSlot]; el.innerHTML=htmlText; el.classList.toggle('show',!!htmlText);
-  if(voice && htmlText && 'speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(el.textContent);u.rate=.95;speechSynthesis.speak(u)}
 }
 function activate(idx,local){
-  if(cur>=0 && cur!==idx){const p=els[cur];p.classList.remove('active');setTimeout(()=>{if(cur!==scenes.indexOf(scenes[idx])||!p.classList.contains('active'))p.classList.remove('on')},800)}
+  if(cur>=0 && cur!==idx){const p=els[cur];p.classList.remove('active');setTimeout(()=>{if(!p.classList.contains('active'))p.classList.remove('on')},800)}
   cur=idx;capIdx=-2;
   const el=els[idx];
   if(el.classList.contains('on')){el.classList.remove('on');void el.getBoundingClientRect()}
@@ -495,26 +592,43 @@ function update(){
   const caps=scenes[idx].caps;let ci=-1;for(let i=0;i<caps.length;i++)if(local>=caps[i][0])ci=i;
   if(ci!==capIdx){capIdx=ci;setCaption(ci<0?'':caps[ci][1])}
   if(scenes[idx].tick)scenes[idx].tick(local);
+  // Keep the illustrated motion on the recording's clock, including after buffering.
+  anims(els[idx]).forEach(a=>{if(Math.abs((a.currentTime||0)-local*1000)>120)a.currentTime=local*1000});
   fill.style.width=(t/total*100)+'%';
-  timeEl.textContent=Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')+' / '+Math.floor(total/60)+':'+String(total%60).padStart(2,'0');
+  timeEl.textContent=formatTime(t)+' / '+formatTime(total);
 }
-function frame(now){if(!playing)return;t+=Math.min(.1,(now-last)/1000);last=now;update();raf=requestAnimationFrame(frame)}
-function play(){if(playing)return;if(t>=total)t=0;endEl.classList.remove('show');playing=true;stage.classList.remove('paused');playBtn.textContent='Pause';last=performance.now();if(cur>=0)anims(els[cur]).forEach(a=>a.play());update();raf=requestAnimationFrame(frame)}
-function stop(){playing=false;stage.classList.add('paused');playBtn.textContent='Play';cancelAnimationFrame(raf);if('speechSynthesis' in window)speechSynthesis.cancel()}
+function frame(){if(!playing)return;t=Math.min(total,narration.currentTime);update();if(playing)raf=requestAnimationFrame(frame)}
+function play(){
+  if(playing)return;
+  if(t>=total){t=0;cur=-1;els.forEach(el=>el.classList.remove('on','active'))}
+  endEl.classList.remove('show');stage.classList.remove('awaiting-play');audioStatus.hidden=true;
+  narration.currentTime=t;narration.muted=!voice;
+  const request=++playRequest;
+  playing=true;stage.classList.remove('paused');playBtn.textContent='Pause';
+  if(cur>=0)anims(els[cur]).forEach(a=>a.play());
+  update();raf=requestAnimationFrame(frame);
+  narration.play().catch(error=>{
+    if(request!==playRequest||error.name==='AbortError')return;
+    stop();audioStatus.textContent=error.name==='NotAllowedError'?'Press Play to start the story with sound.':'The narration could not load. Reload the page to try again.';audioStatus.hidden=false;
+  });
+}
+function stop(){++playRequest;playing=false;narration.pause();stage.classList.add('paused');playBtn.textContent='Play';cancelAnimationFrame(raf);if(cur>=0)anims(els[cur]).forEach(a=>a.pause())}
 function seek(time){t=Math.max(0,Math.min(total-0.001,time));endEl.classList.remove('show');const [idx,start]=sceneAt(t);
-  if(idx===cur){anims(els[cur]).forEach(a=>{a.currentTime=(t-start)*1000;if(!playing)a.pause()});capIdx=-1}else activate(idx,t-start);
-  if('speechSynthesis' in window)speechSynthesis.cancel();update()}
+  if(idx===cur){anims(els[cur]).forEach(a=>{a.currentTime=(t-start)*1000;if(!playing)a.pause()});capIdx=-2}else activate(idx,t-start);
+  narration.currentTime=t;update()}
 playBtn.addEventListener('click',()=>playing?stop():play());
 document.getElementById('restart').addEventListener('click',()=>{seek(0);play()});
 document.getElementById('replay').addEventListener('click',()=>{seek(0);play()});
-voiceBtn.addEventListener('click',()=>{voice=!voice;voiceBtn.setAttribute('aria-pressed',voice);if(!voice&&'speechSynthesis' in window)speechSynthesis.cancel()});
+voiceBtn.addEventListener('click',()=>{voice=!voice;voiceBtn.setAttribute('aria-pressed',voice);narration.muted=!voice});
+narration.addEventListener('ended',()=>{t=total;update()});
+narration.addEventListener('error',()=>{stop();audioStatus.textContent='The narration could not load. Reload the page to try again.';audioStatus.hidden=false});
 document.getElementById('full').addEventListener('click',()=>{document.fullscreenElement?document.exitFullscreen():stage.requestFullscreen&&stage.requestFullscreen()});
 stage.addEventListener('click',e=>{if(e.target.closest('button'))return;playing?stop():play()});
 document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();playing?stop():play()}else if(e.code==='ArrowRight'){seek(t+5)}else if(e.code==='ArrowLeft'){seek(t-5)}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing)stop()});
 
 activate(0,0);
-play();
+stop();update();
 window.movie={seek,play,stop,scenes,get t(){return t},total};
 </script>
 </body>
