@@ -16,7 +16,7 @@
     { key: 'theater', name: 'Theater', fonts: 'Limelight&family=Lora:ital,wght@0,400..700;1,400' },
   ];
   const KEY = 'pets-theme';
-  const DEFAULT = THEMES[0].key;
+  const DEFAULT = 'aquarium';
 
   function get() {
     try {
