@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Death list</title>
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand">
+    <div class="brand-row"><a class="back" href="/">All pets</a><a class="back" href="/about/">About</a></div>
+    <h1>Death list</h1>
+    <p class="tagline">Hard Code pets whose health reached zero. They do not come back. Each one has a thread; anyone can leave a word.</p>
+  </div>
+  <div class="top-actions"><label class="theme-switch" id="theme-switch"></label></div>
+</header>
+
+<main>
+<p id="status" class="status">Loading...</p>
+<div id="errors" class="errors" hidden><h2>Something went wrong</h2><ul id="error-list"></ul></div>
+<ol id="list" class="graves"></ol>
+</main>
+</div>
+
+<script src="/spot.js"></script>
+<script src="/pets.js"></script>
+<script>
+(async function () {
+  const P = Pets;
+  const { el, db, strip, effectiveState, avatarNode, errorLog, errText, isDead, recordDeath, postComment, LIMITS } = P;
+  const $ = (id) => document.getElementById(id);
+  const errors = errorLog($('error-list'));
+  const status = $('status');
+  const list = $('list');
+  PetsTheme.switcher($('theme-switch'));
+
+  let me = null;
+  try { me = await spot.me(); } catch (e) { errors.add('identity', e); }
+
+  const deaths = {};   // pet id -> death record
+  const comments = {}; // pet id -> { id -> comment }
+  const nodes = {};    // pet id -> { li, thread, count }
+
+  const kindName = (d) => d.kind === 'custom' ? 'Custom pet' : P.templateByKey(d.kind).name;
+  const days = (n) => n === 0 ? 'less than a day' : n + ' day' + (n === 1 ? '' : 's');
+
+  function renderThread(petId) {
+    const n = nodes[petId];
+    if (!n) return;
+    const items = Object.values(comments[petId] || {}).sort((a, b) => a.created_at.localeCompare(b.created_at));
+    n.count.textContent = items.length ? items.length + ' word' + (items.length === 1 ? '' : 's') + ' left' : 'No words yet. Be the first.';
+    n.thread.replaceChildren();
+    items.forEach((c) => {
+      n.thread.appendChild(el('li', { class: 'rx' }, [
+        el('div', { class: 'rx-in' }, [
+          el('div', {}, [el('span', { class: 'rx-who', text: c.author_name || c.owner }), el('time', { class: 'rx-when', datetime: c.created_at, text: new Date(c.created_at).toLocaleString() })]),
+          el('p', { class: 'rx-text', text: c.text }),
+        ]),
+      ]));
+    });
+  }
+
+  function graveNode(d) {
+    const thread = el('ol', { class: 'reactions' });
+    const count = el('p', { class: 'muted' });
+    const form = el('form', { class: 'comment-form' });
+    if (me) {
+      const text = el('textarea', { maxlength: String(LIMITS.text), rows: '2', placeholder: 'Say goodbye, share a memory, or blame the owner.', required: true, 'aria-label': 'Your words for ' + d.name });
+      const button = el('button', { type: 'submit', class: 'btn btn-primary', text: 'Leave a word' });
+      const note = el('span', { class: 'inline-status', role: 'status' });
+      form.append(el('p', { class: 'field' }, [text]), el('div', { class: 'actions' }, [button, note]));
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const value = text.value.trim();
+        if (!value) return;
+        button.disabled = true;
+        note.textContent = 'Posting...';
+        try {
+          const doc = await postComment(d.pet_id, value, me);
+          (comments[d.pet_id] = comments[d.pet_id] || {})[doc.id] = strip(doc);
+          renderThread(d.pet_id);
+          text.value = '';
+          P.counters(form);
+          note.textContent = '';
+        } catch (e) {
+          errors.add('comment', e);
+          note.textContent = errText(e);
+        }
+        button.disabled = false;
+      });
+    } else {
+      form.appendChild(el('p', { class: 'muted', text: 'Sign in through the mesh to leave a word.' }));
+    }
+    const facts = [
+      el('dt', { text: 'Owner' }), el('dd', { text: d.pet_owner || 'unknown' }),
+      el('dt', { text: 'Born' }), el('dd', { text: new Date(d.born_at).toLocaleDateString() }),
+      el('dt', { text: 'Died' }), el('dd', { text: new Date(d.died_at).toLocaleString() }),
+      el('dt', { text: 'Last visit' }), el('dd', { text: d.last_interaction_at ? P.humanDuration(P.hoursAgo(d.last_interaction_at, new Date(d.died_at).getTime())) + ' before death' : 'never' }),
+    ];
+    if (d.hungry_hours) facts.push(el('dt', { text: 'Went hungry for' }), el('dd', { text: P.humanDuration(d.hungry_hours) }));
+    const li = el('li', { class: 'panel grave', id: 'pet-' + d.pet_id }, [
+      el('div', { class: 'grave-head' }, [
+        el('div', { class: 'grave-avatar' }, [avatarNode(d, 96)]),
+        el('div', { class: 'grave-text' }, [
+          el('h2', {}, [el('a', { href: '/pet/?id=' + encodeURIComponent(d.pet_id), text: d.name })]),
+          el('p', { class: 'muted', text: kindName(d) + ' · lived ' + days(d.age_days) }),
+          d.last_words ? el('p', { class: 'quote', text: 'Last words: “' + d.last_words + '”' }) : el('p', { class: 'quote muted', text: 'Left no last words.' }),
+          el('p', { class: 'card-desc', text: d.description }),
+          el('dl', { class: 'facts' }, facts),
+        ]),
+      ]),
+      el('section', { class: 'thread' }, [
+        el('h3', { text: 'Words left' }),
+        count,
+        thread,
+        form,
+      ]),
+    ]);
+    P.counters(li);
+    return { li, thread, count };
+  }
+
+  function render() {
+    const items = Object.values(deaths).sort((a, b) => b.died_at.localeCompare(a.died_at));
+    status.textContent = items.length ? items.length + ' pet' + (items.length === 1 ? '' : 's') + ' died.' : 'Nobody has died. Hard Code pets end up here when their health reaches zero.';
+    list.replaceChildren();
+    items.forEach((d) => {
+      if (!nodes[d.pet_id]) nodes[d.pet_id] = graveNode(d);
+      list.appendChild(nodes[d.pet_id].li);
+      renderThread(d.pet_id);
+    });
+    // Jump to the thread named in the URL hash once it exists.
+    if (location.hash) { const target = document.getElementById(location.hash.slice(1)); if (target && !target.dataset.seen) { target.dataset.seen = '1'; target.scrollIntoView(); } }
+  }
+
+  async function loadComments(petId) {
+    try {
+      const docs = await db.comments.list({ where: { pet_id: petId }, limit: 200 });
+      comments[petId] = {};
+      docs.forEach((c) => { comments[petId][c.id] = strip(c); });
+      renderThread(petId);
+    } catch (e) { errors.add('comments ' + petId, e); }
+  }
+
+  try {
+    const [deathDocs, petDocs, stateDocs] = await Promise.all([
+      db.deaths.list({ limit: 200 }),
+      db.pets.list({ limit: 200 }),
+      db.state.list({ limit: 200 }),
+    ]);
+    deathDocs.forEach((d) => { deaths[d.data.pet_id] = strip(d); });
+    // Deaths nobody has recorded yet: a Hard Code pet whose health reached
+    // zero while no page was open. This page records them so the list is
+    // complete on its own.
+    const states = {};
+    stateDocs.forEach((d) => { states[d.data.pet_id] = strip(d); });
+    const now = Date.now();
+    const unrecorded = petDocs.map(strip).filter((p) => p.hardcore && !p.dismissed_at && !deaths[p.id] && states[p.id] && isDead(p, effectiveState(states[p.id], now)));
+    for (const p of unrecorded) {
+      try { const d = await recordDeath(p, effectiveState(states[p.id], now), now); deaths[p.id] = d; }
+      catch (e) { errors.add('death record ' + p.name, e); }
+    }
+    render();
+    await Promise.all(Object.keys(deaths).map(loadComments));
+  } catch (e) {
+    status.textContent = 'Could not load the death list.';
+    errors.add('database', e);
+    return;
+  }
+
+  db.deaths.subscribe({
+    onCreate: (d) => { if (!deaths[d.data.pet_id]) { deaths[d.data.pet_id] = strip(d); render(); loadComments(d.data.pet_id); } },
+    onDelete: () => { /* a losing duplicate record; the winner stays */ },
+    onError: (e) => errors.add('realtime deaths', e),
+  });
+  db.comments.subscribe({
+    onCreate: (d) => { (comments[d.data.pet_id] = comments[d.data.pet_id] || {})[d.id] = strip(d); renderThread(d.data.pet_id); },
+    onError: (e) => errors.add('realtime comments', e),
+  });
+})();
+</script>
+</body>
+</html>

@@ -11,13 +11,16 @@
 <div class="wrap">
 <header class="top">
   <div class="brand">
-    <div class="brand-row"><a class="brand-name" href="/">Pets</a><a class="back" href="/about/">About</a></div>
+    <a class="brand-name" href="/">Pets</a>
     <p class="tagline">Virtual pets for the team. Care for one, and its reaction lands in Slack, so colleagues get to know each other.</p>
   </div>
-  <div class="top-actions">
-    <label class="theme-switch" id="theme-switch"></label>
-    <span id="sound-toggle"></span>
-    <a class="btn btn-primary" href="/create/">Create a pet</a>
+  <div class="top-actions stack">
+    <nav class="top-nav" aria-label="Pages"><a href="/about/">About</a><a href="/deaths/">Death list</a></nav>
+    <div class="top-row">
+      <label class="theme-switch" id="theme-switch"></label>
+      <span id="sound-toggle"></span>
+      <a class="btn btn-primary" href="/create/">Create a pet</a>
+    </div>
   </div>
 </header>
 
@@ -33,7 +36,7 @@
 <script src="/sounds.js"></script>
 <script>
 (async function () {
-  const { el, db, strip, effectiveState, label, ageDays, careText, avatarNode, errorLog, runDigests, hoursAgo, humanDuration, needsAttention } = Pets;
+  const { el, db, strip, effectiveState, label, ageDays, careText, avatarNode, errorLog, runDigests, hoursAgo, humanDuration, needsAttention, isDead, recordDeath } = Pets;
   const errors = errorLog(document.getElementById('error-list'));
   const gallery = document.getElementById('gallery');
   const status = document.getElementById('status');
@@ -45,6 +48,20 @@
 
   const pets = {};
   const states = {};
+  const deaths = {}; // pet id -> death record
+  const recording = new Set();
+
+  // A Hard Code pet whose health reached zero leaves the gallery for the
+  // death list. The first viewer to see it writes the death record.
+  function dead(pet, eff) {
+    if (deaths[pet.id]) return true;
+    if (!isDead(pet, eff)) return false;
+    if (!recording.has(pet.id)) {
+      recording.add(pet.id);
+      recordDeath(pet, eff).then((d) => { deaths[pet.id] = d; }).catch((e) => errors.add('death record ' + pet.name, e));
+    }
+    return true;
+  }
 
   function chip(text, low, extra) {
     return el('li', { class: 'chip' + (low ? ' low' : '') + (extra ? ' ' + extra : ''), text });
@@ -52,10 +69,11 @@
 
   function render() {
     gallery.replaceChildren();
+    const now = Date.now();
     const list = Object.values(pets).filter((p) => !p.dismissed_at)
+      .filter((p) => !dead(p, states[p.id] ? effectiveState(states[p.id], now) : null))
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
     status.textContent = list.length ? list.length + ' pet' + (list.length === 1 ? '' : 's') : 'No pets yet. Create the first one.';
-    const now = Date.now();
     list.forEach((pet) => {
       const st = states[pet.id];
       const eff = st ? effectiveState(st, now) : null;
@@ -65,7 +83,7 @@
       const children = [
         el('a', { class: 'card-avatar', href: link, 'aria-label': 'Open ' + pet.name }, [avatarNode(pet, 112)]),
         el('h2', { class: 'card-name' }, [el('a', { href: link, text: pet.name })]),
-        el('p', { class: 'card-kind', text: kind + ', ' + (age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's') + ' old') }),
+        el('p', { class: 'card-kind', text: kind + ', ' + (age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's') + ' old') + (pet.hardcore ? ' · Hard Code' : '') }),
       ];
       if (eff) {
         children.push(el('ul', { class: 'chips', 'aria-label': 'State' }, [
@@ -86,12 +104,14 @@
   }
 
   try {
-    const [petDocs, stateDocs] = await Promise.all([
+    const [petDocs, stateDocs, deathDocs] = await Promise.all([
       db.pets.list({ limit: 200 }),
       db.state.list({ limit: 200 }),
+      db.deaths.list({ limit: 200 }),
     ]);
     petDocs.forEach((d) => { pets[d.id] = strip(d); });
     stateDocs.forEach((d) => { states[d.data.pet_id] = strip(d); });
+    deathDocs.forEach((d) => { deaths[d.data.pet_id] = strip(d); });
     render();
   } catch (e) {
     status.textContent = 'Could not load pets.';
@@ -111,13 +131,17 @@
     onUpdate: (d) => { states[d.data.pet_id] = strip(d); render(); },
     onError: (e) => errors.add('realtime state', e),
   });
+  db.deaths.subscribe({
+    onCreate: (d) => { deaths[d.data.pet_id] = strip(d); render(); },
+    onError: (e) => errors.add('realtime deaths', e),
+  });
   // Decay is time-based; refresh the labels once a minute.
   setInterval(render, 60 * 1000);
 
   // Daily check-in per channel for pets that need attention. Any visit may
   // trigger it; the digest documents make sure only one post goes out.
   if (me) {
-    runDigests(Object.values(pets), states, me, (ev) => {
+    runDigests(Object.values(pets).filter((p) => !deaths[p.id]), states, me, (ev) => {
       if (ev.ok) {
         const note = el('p', { class: 'status', text: 'Posted a daily check-in for ' + ev.count + ' pet' + (ev.count === 1 ? '' : 's') + ' to ' + ev.channel + '.' });
         status.after(note);

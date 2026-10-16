@@ -33,6 +33,10 @@
       <section class="panel">
         <h2 id="talk-title">Talk to the pet</h2>
         <p id="no-care" class="muted" hidden>Only the listed carers can talk to this pet. You can still watch.</p>
+        <div id="dead" class="dead-note" hidden>
+          <p id="dead-text"></p>
+          <p><a class="btn" id="dead-link" href="/deaths/">Leave a word on the death list</a></p>
+        </div>
         <form id="interact" hidden>
           <p class="field"><label><span class="hint">What do you do or say?</span><textarea id="text" maxlength="400" rows="3" placeholder="Feed it, play with it, tell it about your day..." required></textarea></label>
           <span class="hint">The pet's memory of this and its reaction go to <code class="channel-name"></code>.</span></p>
@@ -61,6 +65,7 @@
         <h2>About</h2>
         <dl class="facts">
           <dt>Age</dt><dd id="age"></dd>
+          <dt>Mode</dt><dd id="mode"></dd>
           <dt>Owner</dt><dd id="owner"></dd>
           <dt>Who can care</dt><dd id="care"></dd>
           <dt>Slack channel</dt><dd><code id="channel"></code></dd>
@@ -103,7 +108,7 @@
 <script>
 (async function () {
   const P = Pets;
-  const { el, db, strip, effectiveState, label, errText, lower } = P;
+  const { el, db, strip, effectiveState, label, errText, lower, isDead, recordDeath, petData } = P;
   const $ = (id) => document.getElementById(id);
   const errors = P.errorLog($('error-list'));
   PetsSounds.toggle($('sound-toggle'));
@@ -113,10 +118,14 @@
   let me = null;
   try { me = await spot.me(); } catch (e) { errors.add('identity', e); }
 
-  let pet, state;
+  let pet, state, death = null;
   try {
     const bundle = await P.loadPetBundle(petId);
     pet = bundle.pet; state = bundle.state;
+    if (pet.hardcore) {
+      const deaths = await db.deaths.list({ where: { pet_id: petId }, limit: 1 });
+      if (deaths.length) death = strip(deaths[0]);
+    }
   } catch (e) {
     $('status').textContent = 'Could not load this pet.';
     errors.add('database', e);
@@ -136,8 +145,9 @@
     $('name').textContent = pet.name;
     $('talk-title').textContent = 'Talk to ' + pet.name;
     $('description').textContent = pet.description;
-    const age = P.ageDays(pet.created_at);
-    $('age').textContent = age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's');
+    const age = death ? death.age_days : P.ageDays(pet.created_at);
+    $('age').textContent = (age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's')) + (death ? ', at death' : '');
+    $('mode').textContent = pet.hardcore ? 'Hard Code, can die' : 'normal';
     $('owner').textContent = pet.owner;
     $('care').replaceChildren(P.careNode(pet));
     $('channel').textContent = pet.channel;
@@ -146,6 +156,7 @@
 
   function renderState() {
     const eff = effectiveState(state);
+    const gone = death || isDead(pet, eff);
     const meter = (field, title, word, lowBelow) => {
       const value = Math.round(eff[field]);
       const bar = el('div', { class: 'meter-bar', role: 'meter', 'aria-label': title, 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(value) },
@@ -160,10 +171,34 @@
       meter('mood', 'Mood', eff.mood_word || label('mood', eff.mood), 40),
       meter('food', 'Food', label('food', eff.food), 25),
       meter('energy', 'Energy', label('energy', eff.energy), 40),
-      meter('health', 'Health', label('health', eff.health), 50),
+      meter('health', 'Health', gone ? 'dead' : label('health', eff.health), 50),
     );
     $('last-visit').textContent = 'Last visit: ' + (eff.last_interaction_at ? P.humanDuration(P.hoursAgo(eff.last_interaction_at)) + ' ago' : 'none yet');
     $('status-line').textContent = eff.status_line ? '“' + eff.status_line + '”' : '';
+    if (gone) renderDead(eff);
+  }
+
+  // A dead Hard Code pet: the room stays readable, nothing can be sent, and
+  // the thread lives on the death list. The first viewer writes the record;
+  // the page switches over as soon as the decay crosses zero.
+  let recording = false;
+  function renderDead(eff) {
+    if (!death && !recording) {
+      recording = true;
+      recordDeath(pet, eff).then((d) => { death = d; renderPet(); renderDead(eff); })
+        .catch((e) => { recording = false; errors.add('death record', e); });
+    }
+    const when = death ? new Date(death.died_at) : new Date(Date.now() - (eff.dead_hours || 0) * 3600 * 1000);
+    document.title = pet.name + ' (died)';
+    $('talk-title').textContent = pet.name + ' has died';
+    $('dead-text').textContent = pet.name + ' died on ' + when.toLocaleString() + ', ' +
+      (death && death.hungry_hours ? 'after going hungry for ' + P.humanDuration(death.hungry_hours) + '. ' : '') +
+      'Hard Code pets do not come back.';
+    $('dead-link').href = P.deathsUrl(petId);
+    $('dead').hidden = false;
+    $('interact').hidden = true;
+    $('no-care').hidden = true;
+    $('owner-tools').hidden = true;
   }
 
   const inters = {}; // id -> interaction (stripped)
@@ -206,7 +241,7 @@
         if (i.slack_error) li.appendChild(el('p', { class: 'rx-warn', text: 'Slack post failed: ' + i.slack_error }));
         else if (i.slack_ts) li.appendChild(el('p', { class: 'rx-slack', text: 'Posted to ' + pet.channel }));
       } else if (i.status === 'failed') {
-        li.appendChild(el('p', { class: 'rx-warn', text: 'The pet could not react. AI: ' + (i.ai_error || 'unknown error') }));
+        li.appendChild(el('p', { class: 'rx-warn', text: i.fail_reason === 'dead' ? pet.name + ' had already died.' : 'The pet could not react. AI: ' + (i.ai_error || 'unknown error') }));
       } else {
         li.appendChild(el('p', { class: 'rx-wait', text: i.status === 'processing' ? 'The pet is reacting...' : 'Waiting in line' + (i.ticket ? ', ticket ' + i.ticket : '') }));
       }
@@ -311,7 +346,7 @@
   scheduleTick(1000);
 
   // ------------------------------------------------------------- interact
-  if (carer) $('interact').hidden = false; else $('no-care').hidden = false;
+  if ($('dead').hidden) { if (carer) $('interact').hidden = false; else $('no-care').hidden = false; }
   let typingSent = false;
   $('text').addEventListener('input', () => {
     if (me && !typingSent) { typingSent = true; room.send('typing', { name: me.name || me.email }); setTimeout(() => { typingSent = false; }, 2000); }
@@ -341,7 +376,7 @@
 
   // ---------------------------------------------------------------- owner
   let dismissing = false;
-  if (owner) {
+  if (owner && $('dead').hidden) {
     $('owner-tools').hidden = false;
     document.querySelector('input[name=care][value=' + pet.care + ']').checked = true;
     $('carers-box').hidden = pet.care !== 'group';
@@ -367,8 +402,7 @@
       const description = $('edit-description').value.trim();
       const soul = $('edit-soul').value.trim();
       if (!description || !soul) { st.textContent = 'Description and soul are required.'; return; }
-      const data = { name: pet.name, kind: pet.kind, emoji: pet.emoji, avatar_url: pet.avatar_url || null,
-        description, soul, care, carers, channel, dismissed_at: null };
+      const data = petData(pet, { description, soul, care, carers, channel });
       st.textContent = 'Saving...';
       try {
         const d = await db.pets.updateMine(petId, data);
@@ -385,9 +419,7 @@
       const st = $('dismiss-status');
       dismissing = true;
       st.textContent = 'Dismissing...';
-      const data = { name: pet.name, kind: pet.kind, emoji: pet.emoji, avatar_url: pet.avatar_url || null,
-        description: pet.description, soul: pet.soul, care: pet.care, carers: pet.carers || [], channel: pet.channel,
-        dismissed_at: new Date().toISOString() };
+      const data = petData(pet, { dismissed_at: new Date().toISOString() });
       try {
         await db.pets.updateMine(petId, data);
       } catch (e) {

@@ -43,7 +43,7 @@
 <script src="/pets.js"></script>
 <script>
 (async function () {
-  const { el, db, strip, avatarNode, errorLog, errText, petUrl, DEFAULT_CHANNEL } = Pets;
+  const { el, db, strip, avatarNode, errorLog, errText, petUrl, petData, DEFAULT_CHANNEL } = Pets;
   const errors = errorLog(document.getElementById('error-list'));
   const status = document.getElementById('status');
   const list = document.getElementById('list');
@@ -77,13 +77,6 @@
   status.textContent = pets.length ? pets.length + ' pet' + (pets.length === 1 ? '' : 's') : 'No pets yet.';
   document.getElementById('tools').hidden = false;
 
-  // update() replaces the whole data object, so send every pet field back.
-  function petData(pet, channel) {
-    return { name: pet.name, kind: pet.kind, emoji: pet.emoji, avatar_url: pet.avatar_url || null,
-      description: pet.description, soul: pet.soul, care: pet.care, carers: pet.carers || [],
-      channel, dismissed_at: pet.dismissed_at || null };
-  }
-
   pets.forEach((pet) => {
     const input = el('input', { value: pet.channel, 'aria-label': 'Slack channel for ' + pet.name });
     const button = el('button', { type: 'submit', class: 'btn', text: 'Save' });
@@ -98,7 +91,7 @@
       button.disabled = true;
       note.textContent = 'Saving...';
       try {
-        const d = await db.pets.update(pet.id, petData(pet, channel));
+        const d = await db.pets.update(pet.id, petData(pet, { channel }));
         Object.assign(pet, strip(d));
         note.textContent = 'Saved.';
       } catch (e) {
