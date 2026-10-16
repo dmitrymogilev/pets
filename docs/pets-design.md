@@ -12,6 +12,9 @@ update happens on a user visit. Nobody visiting means nothing happens.
   Slack channel, description, soul.
 - `/pet/?id=<doc id>` pet room: state, interaction input, live reactions,
   presence, owner tools. Runs the queue engine.
+- `/about/` static page linked from the gallery header: the `/story/`
+  animation in an iframe, why the game exists, how it works, roadmap,
+  contribution links, and credits.
 - `/test/` smoke tests for the platform calls, owner only. `/story/` is an
   unrelated animated page.
 

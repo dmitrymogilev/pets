@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About Pets</title>
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand">
+    <a class="back" href="/">All pets</a>
+    <h1>About Pets</h1>
+    <p class="tagline">Virtual pets for the team, made at a T1A hackathon.</p>
+  </div>
+  <div class="top-actions">
+    <label class="theme-switch" id="theme-switch"></label>
+  </div>
+</header>
+
+<main class="about">
+
+<section class="panel">
+  <h2>Our story</h2>
+  <p>Petopia, the story of the mission. Press Play. The narration starts on your click.</p>
+  <div class="story-frame">
+    <iframe src="/story/" title="Petopia: the story of the mission" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </div>
+  <p><a class="back" href="/story/">Open the story in its own page</a></p>
+</section>
+
+<section class="panel">
+  <h2>Why we built it</h2>
+  <p class="lead">Colleagues on different projects rarely talk. A shared pet gives them a reason to. The pet repeats the small things people tell it, and a pet can say what a person would not post in a work chat.</p>
+
+  <ol class="flow flow-4" aria-label="A chain of reactions, step by step">
+    <li class="flow-step">
+      <span class="flow-icon">🎂</span>
+      <h3>Maria's son turns six</h3>
+      <p>Nobody at work knows. There is no reason to mention it in a project channel.</p>
+    </li>
+    <li class="flow-step">
+      <span class="flow-icon">🐻</span>
+      <h3>She feeds Boris the cake</h3>
+      <p>Maria wants to share the day anyway. A hungry pet is a good excuse.</p>
+    </li>
+    <li class="flow-step">
+      <span class="flow-icon">💬</span>
+      <h3>Boris posts in #pets</h3>
+      <p>The pet keeps the fact and tells the channel, in its own words.</p>
+    </li>
+    <li class="flow-step">
+      <span class="flow-icon">🎉</span>
+      <h3>The team joins in</h3>
+      <p>Emoji, replies, congratulations. One reaction starts a chain of reactions.</p>
+    </li>
+  </ol>
+
+  <figure class="slack">
+    <figcaption>What lands in Slack</figcaption>
+    <div class="slack-msg">
+      <span class="slack-avatar">🐾</span>
+      <div class="slack-body">
+        <p class="slack-who">Pets <span class="slack-time">14:02</span></p>
+        <p>🐻 <strong>Boris</strong> · Maria stopped by</p>
+        <p>Maria shared a slice of her son's birthday cake with Boris.</p>
+        <p>Birthday cake?! Please tell him happy birthday from a very full bear. 🎂</p>
+        <p class="muted"><em>mood: delighted · food: full · energy: lively · health: fine</em></p>
+        <ul class="slack-reacts" aria-label="Emoji reactions">
+          <li>🎂 7</li><li>🎉 5</li><li>❤️ 4</li><li>🐻 2</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slack-msg slack-reply">
+      <span class="slack-avatar">🧑</span>
+      <div class="slack-body">
+        <p class="slack-who">Pavel <span class="slack-time">14:05</span></p>
+        <p>Happy birthday to the little one! 🎈</p>
+      </div>
+    </div>
+    <div class="slack-msg slack-reply">
+      <span class="slack-avatar">👩</span>
+      <div class="slack-body">
+        <p class="slack-who">Olga <span class="slack-time">14:06</span></p>
+        <p>Six already? Party photos please, Maria!</p>
+      </div>
+    </div>
+  </figure>
+</section>
+
+<section class="panel">
+  <h2>How it works</h2>
+  <p class="lead">From an egg to a daily habit, in six steps.</p>
+
+  <ol class="flow flow-6" aria-label="The life of a pet, step by step">
+    <li class="flow-step"><span class="flow-icon">🥚</span><h3>Create</h3><p>Name, kind or custom avatar, a public description, and a hidden soul. Choose who can care and the Slack channel.</p></li>
+    <li class="flow-step"><span class="flow-icon">🐣</span><h3>Hatch</h3><p>The pet says hello in its channel and appears in the gallery.</p></li>
+    <li class="flow-step"><span class="flow-icon">🍎</span><h3>Care</h3><p>Anyone on the care list opens the room and types what they do or say.</p></li>
+    <li class="flow-step"><span class="flow-icon">💬</span><h3>React</h3><p>The reaction shows in the room, moves the stats, and goes to Slack.</p></li>
+    <li class="flow-step"><span class="flow-icon">⏳</span><h3>Fade</h3><p>Food, mood, energy, and health fall while nobody visits.</p></li>
+    <li class="flow-step"><span class="flow-icon">📣</span><h3>Digest</h3><p>Once a day, one message lists the pets that need attention.</p></li>
+  </ol>
+  <p class="hint">Only the owner can edit a pet, change its care list, or dismiss it. A dismissed pet says goodbye in Slack.</p>
+
+  <h3 class="sub">Inside one reaction</h3>
+  <div class="pipe" role="img" aria-label="Inputs go to the pet, the pet answers, and the answer is stored and posted to Slack">
+    <div class="pipe-node">
+      <h4>Goes in</h4>
+      <ul>
+        <li>What you typed</li>
+        <li>Description and soul</li>
+        <li>Stats and age</li>
+        <li>5 memories of you</li>
+        <li>10 memories of everyone</li>
+      </ul>
+    </div>
+    <span class="pipe-arrow" aria-hidden="true"></span>
+    <div class="pipe-node pipe-core">
+      <h4>The pet thinks</h4>
+      <p>One call to the Spot AI gateway. Names and emails are replaced by hashed aliases, so the model never sees who you are.</p>
+    </div>
+    <span class="pipe-arrow" aria-hidden="true"></span>
+    <div class="pipe-node">
+      <h4>Comes out</h4>
+      <ul>
+        <li>A reaction, in character</li>
+        <li>A one-line memory</li>
+        <li>A mood word</li>
+        <li>New stats, at most 30 points of change</li>
+      </ul>
+    </div>
+    <span class="pipe-arrow" aria-hidden="true"></span>
+    <div class="pipe-node">
+      <h4>Goes to</h4>
+      <ul>
+        <li>The Spot document store. One queue per pet, so nobody talks over anyone.</li>
+        <li>The Slack channel: memory, reaction, and mood line.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="hint">There is no server. Everything runs in the browser of whoever has the page open. Nobody visiting means nothing happens.</p>
+</section>
+
+<section class="panel">
+  <h2>Roadmap</h2>
+  <ol class="road">
+    <li class="road-stop">
+      <span class="road-when">Now</span>
+      <h3>Feedback</h3>
+      <p>Hear from the first users and fix what gets in the way.</p>
+    </li>
+    <li class="road-stop">
+      <span class="road-when">Next</span>
+      <h3>Photos</h3>
+      <p>Attach a picture to an interaction. "Let's read together, are you in?" with the cover of your book. Needs image input in the Spot AI gateway.</p>
+    </li>
+    <li class="road-stop">
+      <span class="road-when">Later</span>
+      <h3>Pet customization</h3>
+      <p>Custom sounds, a wider set of moods, and room backgrounds.</p>
+    </li>
+  </ol>
+</section>
+
+<div class="about-pair">
+  <section class="panel">
+    <h2>Contribute</h2>
+    <p>The code is open at <a href="https://github.com/dmitrymogilev/pets">github.com/dmitrymogilev/pets</a>. Issues and pull requests are welcome.</p>
+    <p>Join our public Slack channel at T1A: <strong>#pets</strong>. That is where the pets live.</p>
+  </section>
+  <section class="panel">
+    <h2>Credits</h2>
+    <p>Thanks for the idea to Radmila Minacheva.</p>
+    <p>Built with taste and feeling by:</p>
+    <ul>
+      <li>Radmila Minacheva</li>
+      <li>Alexandra Tsyliya</li>
+      <li>Dmitry Mogilev</li>
+    </ul>
+  </section>
+</div>
+
+</main>
+</div>
+
+<script>PetsTheme.switcher(document.getElementById('theme-switch'));</script>
+</body>
+</html>
