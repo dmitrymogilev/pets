@@ -2,50 +2,64 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create a pet</title>
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
 </head>
 <body>
-<h1>Create a pet</h1>
-<p><a href="/">Back to all pets</a></p>
-<div id="errors" hidden><h2>Errors</h2><ul id="error-list"></ul></div>
+<div class="wrap">
+<header class="top">
+  <div class="brand">
+    <a class="back" href="/">All pets</a>
+    <h1>Create a pet</h1>
+  </div>
+</header>
+
+<main>
+<div id="errors" class="errors" hidden><h2>Something went wrong</h2><ul id="error-list"></ul></div>
 
 <form id="form">
-  <p><label>Name (max 30)<br><input id="name" maxlength="30" required size="40"></label></p>
+  <section class="panel">
+    <h2>Who is it</h2>
+    <p class="field"><label><span>Name</span><input id="name" maxlength="30" required autocomplete="off"></label><span class="hint">Up to 30 characters.</span></p>
+    <p class="field"><label><span>Kind of pet</span><select id="kind" required></select></label></p>
 
-  <p><label>Pet<br><select id="kind" required></select></label></p>
+    <fieldset id="custom-box" hidden>
+      <legend>Custom avatar</legend>
+      <p class="field"><label><span>Describe the picture</span><textarea id="image-prompt" maxlength="200" rows="3"></textarea></label><span class="hint">Up to 200 characters. The picture is generated for you.</span></p>
+      <div class="actions"><button type="button" class="btn" id="generate">Generate picture</button> <span id="image-status" class="inline-status"></span></div>
+      <p><img id="avatar-preview" class="avatar-preview" alt="Generated avatar" width="192" height="192" hidden></p>
+    </fieldset>
 
-  <fieldset id="custom-box" hidden>
-    <legend>Custom avatar</legend>
-    <p><label>Describe the picture (max 200)<br><textarea id="image-prompt" maxlength="200" rows="3" cols="60"></textarea></label></p>
-    <p><button type="button" id="generate">Generate</button> <span id="image-status"></span></p>
-    <p><img id="avatar-preview" alt="" width="256" height="256" hidden></p>
-  </fieldset>
+    <p class="field"><label><span>Description</span><textarea id="description" maxlength="200" rows="3" required></textarea></label><span class="hint">Everyone sees this. Up to 200 characters.</span></p>
+    <p class="field"><label><span>Soul</span><textarea id="soul" maxlength="600" rows="6" required></textarea></label><span class="hint">Personality and behavior, up to 600 characters. Other people do not see it on the pages, but it is not a secret: the whole game runs in the browser.</span></p>
+  </section>
 
-  <fieldset>
-    <legend>Who can care</legend>
-    <p>Everyone can see every pet. This decides who may interact with it.</p>
-    <label><input type="radio" name="care" value="owner" checked> Individual: only I care</label><br>
-    <label><input type="radio" name="care" value="everyone"> Public: everyone cares</label><br>
-    <label><input type="radio" name="care" value="group"> Group: I and these people care</label><br>
-    <p id="carers-box" hidden><label>Emails, one per line or comma separated<br><textarea id="carers" rows="3" cols="60"></textarea></label></p>
-  </fieldset>
+  <section class="panel">
+    <h2>Who can care</h2>
+    <p class="hint">Everyone can see every pet. This decides who may interact with it.</p>
+    <div class="choice">
+      <label><input type="radio" name="care" value="owner" checked> <span>Only me</span></label>
+      <label><input type="radio" name="care" value="everyone"> <span>Everyone on the team</span></label>
+      <label><input type="radio" name="care" value="group"> <span>Me and a few people</span></label>
+    </div>
+    <p class="field" id="carers-box" hidden><label><span>Their emails</span><textarea id="carers" rows="3"></textarea></label><span class="hint">One per line, or separated by commas.</span></p>
+  </section>
 
-  <fieldset>
-    <legend>Slack channel for reactions</legend>
-    <label><input type="radio" name="channel-mode" value="default" checked> Default channel <code id="default-channel"></code></label><br>
-    <label><input type="radio" name="channel-mode" value="custom"> Custom channel</label>
-    <p id="channel-box" hidden>
-      <label>Channel <input id="channel" placeholder="#team-room" size="30"></label><br>
-      <small>Any channel works, including private ones, but the Spot app must be added to it first.</small>
-    </p>
-  </fieldset>
+  <section class="panel">
+    <h2>Where reactions go</h2>
+    <div class="choice">
+      <label><input type="radio" name="channel-mode" value="default" checked> <span>Default channel, <code id="default-channel"></code></span></label>
+      <label><input type="radio" name="channel-mode" value="custom"> <span>Another Slack channel</span></label>
+    </div>
+    <p class="field" id="channel-box" hidden><label><span>Channel</span><input id="channel" placeholder="#team-room"></label><span class="hint">Private channels work too, but the Spot app must be added to the channel first.</span></p>
+  </section>
 
-  <p><label>Description, visible to everyone (max 200)<br><textarea id="description" maxlength="200" rows="3" cols="60" required></textarea></label></p>
-  <p><label>Soul: personality and behavior, hidden from the UI for others (max 600)<br><textarea id="soul" maxlength="600" rows="6" cols="60" required></textarea></label>
-  <br><small>Hidden from the pages, not a secret: everything in this game lives in the browser.</small></p>
-
-  <p><button type="submit" id="create">Create</button> <span id="create-status"></span></p>
+  <div class="actions"><button type="submit" class="btn btn-primary" id="create">Create pet</button> <span id="create-status" class="inline-status" role="status"></span></div>
 </form>
+</main>
+</div>
 
 <script src="/spot.js"></script>
 <script src="/pets.js"></script>
@@ -87,7 +101,7 @@
       $('avatar-preview').src = first.data_url || ('data:' + (first.mime_type || 'image/png') + ';base64,' + first.b64);
       $('avatar-preview').hidden = false;
       $('image-status').textContent = 'Done. Not happy? Generate again.';
-      $('generate').textContent = 'Regenerate';
+      $('generate').textContent = 'Generate again';
     } catch (e) {
       $('image-status').textContent = errText(e);
       errors.add('AI image', e);
@@ -108,7 +122,7 @@
       carers: [],
       channel: DEFAULT_CHANNEL,
     };
-    if (!fields.name || !fields.description || !fields.soul) { status.textContent = 'All fields are required.'; return; }
+    if (!fields.name || !fields.description || !fields.soul) { status.textContent = 'Name, description, and soul are required.'; return; }
     if (fields.name.length > LIMITS.name || fields.description.length > LIMITS.description || fields.soul.length > LIMITS.soul) {
       status.textContent = 'A field is too long.'; return;
     }
@@ -123,18 +137,18 @@
       if (!/^[#CU]/.test(ch)) ch = '#' + ch;
       fields.channel = ch;
     }
-    if (fields.kind === 'custom' && !image) { status.textContent = 'Generate an avatar first.'; return; }
+    if (fields.kind === 'custom' && !image) { status.textContent = 'Generate a picture first.'; return; }
     if (!me) { status.textContent = 'No identity, cannot create.'; return; }
 
     $('create').disabled = true;
     try {
       if (fields.kind === 'custom') {
-        status.textContent = 'Uploading avatar...';
+        status.textContent = 'Uploading the picture...';
         try {
           fields.avatar_url = await uploadAvatar(image, 'avatar-' + Date.now() + '.png');
         } catch (e) {
           errors.add('file upload', e);
-          status.textContent = 'Avatar upload failed: ' + errText(e);
+          status.textContent = 'Picture upload failed: ' + errText(e);
           return;
         }
       }
@@ -148,7 +162,7 @@
           Pets.el('a', { href: link, text: 'Open the pet room' }),
         );
       } else {
-        status.textContent = 'Created! Opening the room...';
+        status.textContent = 'Created. Opening the room...';
         location.href = link;
       }
     } catch (e) {

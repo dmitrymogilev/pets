@@ -2,24 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pets</title>
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
 </head>
 <body>
-<h1>Pets</h1>
-<p>Virtual pets for the team. Care for a pet, and its reaction goes to Slack so colleagues get to know each other.</p>
-<p><a href="/create/">Create a pet</a></p>
-<p id="status">Loading pets...</p>
-<div id="errors" hidden><h2>Errors</h2><ul id="error-list"></ul></div>
-<div id="gallery"></div>
+<div class="wrap">
+<header class="top">
+  <div class="brand">
+    <a class="brand-name" href="/">Pets</a>
+    <p class="tagline">Virtual pets for the team. Care for one, and its reaction lands in Slack, so colleagues get to know each other.</p>
+  </div>
+  <a class="btn btn-primary" href="/create/">Create a pet</a>
+</header>
+<nav class="themes" id="themes" role="tablist" aria-label="Look and feel"></nav>
+
+<main>
+<p id="status" class="status">Loading pets...</p>
+<div id="errors" class="errors" hidden><h2>Something went wrong</h2><ul id="error-list"></ul></div>
+<div id="gallery" class="gallery"></div>
+</main>
+</div>
 
 <script src="/spot.js"></script>
 <script src="/pets.js"></script>
 <script>
 (async function () {
-  const { el, db, strip, effectiveState, label, ageDays, careText, avatarNode, errorLog, runDigests, hoursAgo, humanDuration } = Pets;
+  const { el, db, strip, effectiveState, label, ageDays, careText, avatarNode, errorLog, runDigests, hoursAgo, humanDuration, needsAttention } = Pets;
   const errors = errorLog(document.getElementById('error-list'));
   const gallery = document.getElementById('gallery');
   const status = document.getElementById('status');
+  PetsTheme.tabs(document.getElementById('themes'));
 
   let me = null;
   try { me = await spot.me(); } catch (e) { errors.add('identity', e); }
@@ -27,26 +41,42 @@
   const pets = {};
   const states = {};
 
+  function chip(text, low, extra) {
+    return el('li', { class: 'chip' + (low ? ' low' : '') + (extra ? ' ' + extra : ''), text });
+  }
+
   function render() {
     gallery.replaceChildren();
     const list = Object.values(pets).filter((p) => !p.dismissed_at)
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
-    status.textContent = list.length ? list.length + ' pet' + (list.length === 1 ? '' : 's') : 'No pets yet. Create the first one!';
+    status.textContent = list.length ? list.length + ' pet' + (list.length === 1 ? '' : 's') : 'No pets yet. Create the first one.';
     const now = Date.now();
     list.forEach((pet) => {
       const st = states[pet.id];
       const eff = st ? effectiveState(st, now) : null;
-      const card = el('div', { style: 'display:inline-block;vertical-align:top;width:220px;margin:8px;padding:8px;border:1px solid #888' }, [
-        el('div', {}, [avatarNode(pet, 96)]),
-        el('h3', {}, [el('a', { href: '/pet/?id=' + encodeURIComponent(pet.id), text: pet.name })]),
-        el('div', { text: (pet.kind === 'custom' ? 'Custom' : Pets.templateByKey(pet.kind).name) + ' · ' + ageDays(pet.created_at, now) + ' days old' }),
-        el('div', { text: 'Owner: ' + pet.owner }),
-        el('div', { text: 'Care: ' + careText(pet) }),
-        el('div', { text: eff ? 'Mood: ' + (eff.mood_word || label('mood', eff.mood)) + ', ' + label('food', eff.food) + ', ' + label('health', eff.health) : 'State: unknown' }),
-        el('div', { text: eff ? 'Last visit: ' + (eff.last_interaction_at ? humanDuration(hoursAgo(eff.last_interaction_at)) + ' ago' : 'never') : '' }),
-        el('p', { text: pet.description }),
-      ]);
-      gallery.appendChild(card);
+      const link = '/pet/?id=' + encodeURIComponent(pet.id);
+      const kind = pet.kind === 'custom' ? 'Custom pet' : Pets.templateByKey(pet.kind).name;
+      const age = ageDays(pet.created_at, now);
+      const children = [
+        el('a', { class: 'card-avatar', href: link, 'aria-label': 'Open ' + pet.name }, [avatarNode(pet, 112)]),
+        el('h2', { class: 'card-name' }, [el('a', { href: link, text: pet.name })]),
+        el('p', { class: 'card-kind', text: kind + ', ' + (age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's') + ' old') }),
+      ];
+      if (eff) {
+        children.push(el('ul', { class: 'chips', 'aria-label': 'State' }, [
+          chip(eff.mood_word || label('mood', eff.mood), eff.mood < 40, 'mood'),
+          chip(label('food', eff.food), eff.food < 25),
+          chip(label('health', eff.health), eff.health < 50),
+        ]));
+        if (needsAttention(eff).length) children.push(el('span', { class: 'badge', text: 'Needs care' }));
+      }
+      children.push(el('p', { class: 'card-desc', text: pet.description }));
+      children.push(el('dl', { class: 'facts' }, [
+        el('dt', { text: 'Owner' }), el('dd', { text: pet.owner }),
+        el('dt', { text: 'Care' }), el('dd', {}, [Pets.careNode(pet)]),
+        el('dt', { text: 'Last visit' }), el('dd', { text: eff ? (eff.last_interaction_at ? humanDuration(hoursAgo(eff.last_interaction_at, now)) + ' ago' : 'none yet') : 'unknown' }),
+      ]));
+      gallery.appendChild(el('article', { class: 'card' }, children));
     });
   }
 
@@ -84,7 +114,7 @@
   if (me) {
     runDigests(Object.values(pets), states, me, (ev) => {
       if (ev.ok) {
-        const note = el('p', { text: 'Posted a daily check-in for ' + ev.count + ' pet' + (ev.count === 1 ? '' : 's') + ' to ' + ev.channel + '.' });
+        const note = el('p', { class: 'status', text: 'Posted a daily check-in for ' + ev.count + ' pet' + (ev.count === 1 ? '' : 's') + ' to ' + ev.channel + '.' });
         status.after(note);
       } else {
         errors.add('digest ' + ev.channel, ev.error);

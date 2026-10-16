@@ -1,0 +1,684 @@
+/* Pets: shared structure plus five themes. The theme is set on <html data-theme>
+   by /theme.js. Structure rules use the tokens; the theme blocks at the end set
+   the tokens and add each theme's own decorations. */
+
+:root {
+  --bg: #f4f4f4;
+  --surface: #ffffff;
+  --surface-2: #ececec;
+  --ink: #1a1a1a;
+  --muted: #666;
+  --line: #bbb;
+  --accent: #1a1a1a;
+  --accent-ink: #fff;
+  --danger: #b3261e;
+  --ok: #2f7d4f;
+  --radius: 8px;
+  --radius-sm: 4px;
+  --border-w: 1px;
+  --shadow: none;
+  --font-body: system-ui, sans-serif;
+  --font-display: var(--font-body);
+  --size: 16px;
+  --measure: 62ch;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--size);
+  line-height: 1.5;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; }
+h1 { font-size: 2.2rem; }
+h2 { font-size: 1.3rem; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 64px; }
+
+/* ----------------------------------------------------------------- header */
+.top {
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+  gap: 16px 32px; margin-bottom: 24px;
+}
+.brand { display: flex; flex-direction: column; gap: 4px; max-width: var(--measure); }
+.brand-name { font-family: var(--font-display); font-size: 2.6rem; line-height: 1; text-decoration: none; }
+.tagline { color: var(--muted); }
+.back { display: inline-block; text-decoration: none; color: var(--muted); }
+.back:hover { color: var(--ink); }
+
+.themes { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 28px; padding: 0; }
+.theme-tab {
+  font: inherit; font-family: var(--font-display); cursor: pointer;
+  padding: 6px 14px; border: var(--border-w) solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink);
+}
+.theme-tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+/* ----------------------------------------------------------------- common */
+.status { color: var(--muted); margin-bottom: 16px; }
+.muted { color: var(--muted); }
+.lead { font-size: 1.1rem; max-width: var(--measure); }
+.quote { font-style: italic; max-width: var(--measure); }
+.errors {
+  margin: 0 0 20px; padding: 12px 16px; border: var(--border-w) solid var(--danger);
+  border-radius: var(--radius-sm); color: var(--danger); background: var(--surface);
+}
+.errors h2 { font-size: 1rem; margin-bottom: 6px; }
+.errors ul { margin: 0; padding-left: 18px; font-size: .9rem; }
+
+.btn {
+  display: inline-block; font: inherit; font-family: var(--font-display); cursor: pointer; text-decoration: none;
+  padding: 10px 18px; border: var(--border-w) solid var(--accent); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); line-height: 1.2;
+}
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-danger { border-color: var(--danger); color: var(--danger); }
+.btn:disabled { opacity: .55; cursor: wait; }
+
+.panel {
+  background: var(--surface); border: var(--border-w) solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px 22px; margin-bottom: 20px;
+}
+.panel > h2 { margin-bottom: 12px; }
+
+dl.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; overflow-wrap: anywhere; }
+
+.badge {
+  display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .85rem; line-height: 1.5;
+  background: var(--danger); color: #fff;
+}
+
+/* ---------------------------------------------------------------- gallery */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px; }
+.card {
+  position: relative; display: flex; flex-direction: column; gap: 10px;
+  background: var(--surface); border: var(--border-w) solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px;
+}
+.card-avatar { display: flex; justify-content: center; align-items: center; height: 120px; text-decoration: none; }
+.card-avatar img { width: 112px; height: 112px; object-fit: cover; border-radius: var(--radius-sm); }
+.card-name { font-size: 1.5rem; }
+.card-name a { text-decoration: none; }
+.card-name a:hover { text-decoration: underline; }
+.card-kind { color: var(--muted); margin-top: -6px; }
+.card-desc { overflow-wrap: anywhere; }
+.card .facts { font-size: .9rem; margin-top: auto; }
+.card .badge { position: absolute; top: 12px; right: 12px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.chip {
+  padding: 2px 10px; border-radius: 999px; font-size: .9rem; line-height: 1.5;
+  background: var(--surface-2); border: var(--border-w) solid var(--line);
+}
+.chip.low { border-color: var(--danger); color: var(--danger); }
+
+/* ------------------------------------------------------------------- room */
+.hero { display: flex; flex-wrap: wrap; align-items: center; gap: 24px 36px; margin: 8px 0 32px; }
+.hero-avatar { display: flex; align-items: center; justify-content: center; width: 180px; height: 180px; flex: none; }
+.hero-avatar img { width: 160px; height: 160px; object-fit: cover; border-radius: var(--radius); }
+.hero-text { display: flex; flex-direction: column; gap: 10px; flex: 1 1 320px; min-width: 0; }
+.hero-text h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); overflow-wrap: anywhere; }
+
+.room-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 0 24px; }
+.room-grid > * { min-width: 0; }
+@media (max-width: 760px) { .room-grid { grid-template-columns: 1fr; } }
+
+.meter-list { display: grid; gap: 12px; }
+.meter { display: grid; grid-template-columns: 7ch 1fr; gap: 2px 14px; align-items: center; }
+.meter-name { color: var(--muted); }
+.meter-word { grid-column: 2; font-size: .95rem; }
+.meter-bar { grid-column: 2; height: 12px; background: var(--surface-2); border: var(--border-w) solid var(--line); border-radius: 999px; overflow: hidden; }
+.meter-bar > span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+.meter.low .meter-bar > span { background: var(--danger); }
+.meter.low .meter-word { color: var(--danger); }
+
+textarea, input[type="text"], input:not([type]), select {
+  font: inherit; color: var(--ink); background: var(--surface); width: 100%;
+  padding: 10px 12px; border: var(--border-w) solid var(--line); border-radius: var(--radius-sm);
+}
+textarea { resize: vertical; min-height: 5.5em; }
+select { width: auto; max-width: 100%; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; max-width: var(--measure); }
+.field > label { display: flex; flex-direction: column; gap: 6px; }
+.field > span, .field > label > span { font-weight: 600; }
+input[type="radio"] { accent-color: var(--accent); width: 1.1em; height: 1.1em; }
+.hint { color: var(--muted); font-size: .9rem; }
+.choice { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.choice label { display: flex; gap: 10px; align-items: flex-start; }
+.choice input { margin: .3em 0 0; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.actions + p { margin-top: 12px; }
+#typing:empty, #queue:empty, #notice:empty { display: none; }
+.inline-status { color: var(--muted); overflow-wrap: anywhere; }
+fieldset { border: 0; padding: 0; margin: 0 0 20px; min-width: 0; }
+legend { font-family: var(--font-display); font-size: 1.15rem; padding: 0; margin-bottom: 8px; }
+code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .95em; }
+.avatar-preview { width: 192px; height: 192px; border-radius: var(--radius); border: var(--border-w) solid var(--line); }
+
+details > summary { cursor: pointer; font-family: var(--font-display); font-size: 1.3rem; list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "+ "; }
+details[open] > summary::before { content: "– "; }
+details > summary + * { margin-top: 16px; }
+
+/* reactions feed */
+.reactions { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.rx { display: grid; gap: 8px; }
+.rx-in { display: grid; gap: 2px; }
+.rx-who { font-weight: 600; }
+.rx-when { color: var(--muted); font-size: .85rem; margin-left: 8px; }
+.rx-text { overflow-wrap: anywhere; }
+.bubble {
+  position: relative; display: block; max-width: var(--measure); padding: 12px 16px;
+  background: var(--surface-2); border: var(--border-w) solid var(--line); border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+.rx-memory, .rx-after, .rx-slack { font-size: .9rem; color: var(--muted); }
+.rx-warn { color: var(--danger); font-size: .9rem; }
+.rx-wait { color: var(--muted); font-style: italic; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .theme-tab, .meter-bar > span { transition: background-color .15s, color .15s, width .4s; }
+}
+
+/* ======================================================================= */
+/* 1. Pocket: a keychain pet from 1997. The page is the plastic shell, the   */
+/*    content sits on the LCD. Pixel type, segmented meters, no curves on    */
+/*    the screen itself.                                                     */
+/* ======================================================================= */
+[data-theme="pocket"] {
+  --shell: #2b2b30; --shell-hi: #4a4a54; --lcd: #9fb86a; --lcd-dark: #8ca45b; --pixel: #1e2a14;
+  --bg: var(--shell); --surface: var(--lcd); --surface-2: var(--lcd-dark); --ink: var(--pixel);
+  --muted: #3a4a2a; --line: var(--pixel); --accent: var(--pixel); --accent-ink: var(--lcd);
+  --danger: #7a1d12; --ok: var(--pixel);
+  --radius: 0; --radius-sm: 0; --border-w: 2px; --shadow: 3px 3px 0 var(--pixel);
+  --font-body: "VT323", "Courier New", monospace; --font-display: var(--font-body);
+  --size: 21px;
+}
+[data-theme="pocket"] body { background: var(--shell); color: #d8dbe2; }
+[data-theme="pocket"] .wrap { padding-top: 20px; }
+[data-theme="pocket"] .top { color: #e9ebf0; }
+[data-theme="pocket"] .brand-name { color: #f3f4f7; letter-spacing: .02em; }
+[data-theme="pocket"] .tagline, [data-theme="pocket"] .back { color: #a7abb8; }
+[data-theme="pocket"] .top .btn-primary { background: #d33f3f; color: #fff; border-color: #7a1d12; border-radius: 999px; box-shadow: 0 4px 0 #7a1d12; }
+[data-theme="pocket"] .top .btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #7a1d12; }
+[data-theme="pocket"] .theme-tab { background: var(--shell-hi); color: #e9ebf0; border-color: #15151a; border-radius: 6px; box-shadow: 0 3px 0 #15151a; }
+[data-theme="pocket"] .theme-tab[aria-selected="true"] { background: var(--lcd); color: var(--pixel); }
+[data-theme="pocket"] main {
+  background: var(--lcd); color: var(--pixel); padding: 22px 24px 28px;
+  border: 12px solid #1a1a1f; border-radius: 22px;
+  box-shadow: inset 0 0 0 3px #7f965a, inset 0 0 40px rgba(30, 42, 20, .35), 0 0 0 4px var(--shell-hi);
+  background-image: repeating-linear-gradient(0deg, rgba(30, 42, 20, .08) 0 1px, transparent 1px 3px);
+}
+[data-theme="pocket"] main .status, [data-theme="pocket"] main .muted, [data-theme="pocket"] main .back { color: var(--muted); }
+[data-theme="pocket"] .card, [data-theme="pocket"] .panel { background: transparent; }
+[data-theme="pocket"] .card-avatar > *, [data-theme="pocket"] .hero-avatar > * { filter: grayscale(1) contrast(1.15); mix-blend-mode: multiply; image-rendering: pixelated; }
+[data-theme="pocket"] .meter-bar, [data-theme="pocket"] .meter-bar > span, [data-theme="pocket"] .chip { border-radius: 0; }
+[data-theme="pocket"] .card-avatar img, [data-theme="pocket"] .hero-avatar img { border-radius: 50%; }
+[data-theme="pocket"] code { font-family: inherit; font-size: inherit; }
+[data-theme="pocket"] input[type="radio"] { accent-color: var(--pixel); }
+[data-theme="pocket"] .chip, [data-theme="pocket"] .bubble, [data-theme="pocket"] textarea, [data-theme="pocket"] input, [data-theme="pocket"] select { background: transparent; }
+[data-theme="pocket"] .chip.low, [data-theme="pocket"] .badge { background: var(--pixel); color: var(--lcd); border-color: var(--pixel); }
+[data-theme="pocket"] .badge { border-radius: 0; }
+[data-theme="pocket"] .meter-bar { height: 16px; background: transparent; }
+[data-theme="pocket"] .meter-bar > span {
+  background: repeating-linear-gradient(90deg, var(--pixel) 0 8px, transparent 8px 11px);
+}
+[data-theme="pocket"] .meter.low .meter-bar > span { background: repeating-linear-gradient(90deg, var(--danger) 0 8px, transparent 8px 11px); }
+[data-theme="pocket"] .meter.low .meter-word { color: var(--danger); }
+[data-theme="pocket"] .btn { box-shadow: 3px 3px 0 var(--pixel); }
+[data-theme="pocket"] .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--pixel); }
+[data-theme="pocket"] .btn-primary { box-shadow: none; }
+[data-theme="pocket"] .errors { background: var(--pixel); color: var(--lcd); border-color: var(--pixel); }
+
+/* ======================================================================= */
+/* 2. Kennel card: the adoption record at a shelter. Manila folder, ruled    */
+/*    index cards, typewriter type, a rubber stamp for pets that need care.  */
+/* ======================================================================= */
+[data-theme="kennel"] {
+  --manila: #e4d3a1; --card: #fdfbf4; --rule: #dde7f2; --margin: #e38b8b; --stamp: #b3302a;
+  --bg: var(--manila); --surface: var(--card); --surface-2: #f1ecdc; --ink: #22262e; --muted: #5d6270;
+  --line: #22262e; --accent: #22262e; --accent-ink: var(--card); --danger: var(--stamp); --ok: #3a6d4c;
+  --radius: 3px; --radius-sm: 2px; --border-w: 1.5px; --shadow: 2px 3px 0 rgba(34, 38, 46, .25);
+  --font-body: "Courier Prime", "Courier New", Courier, monospace;
+  --font-display: "Special Elite", "Courier Prime", "Courier New", monospace;
+  --size: 17px;
+}
+[data-theme="kennel"] body {
+  background-color: var(--manila);
+  background-image: radial-gradient(rgba(255, 255, 255, .35) 1px, transparent 1px), radial-gradient(rgba(60, 40, 10, .08) 1px, transparent 1px);
+  background-size: 7px 7px, 11px 11px; background-position: 0 0, 3px 5px;
+}
+[data-theme="kennel"] h1, [data-theme="kennel"] h2, [data-theme="kennel"] .brand-name, [data-theme="kennel"] legend, [data-theme="kennel"] summary { font-weight: 400; }
+[data-theme="kennel"] .card, [data-theme="kennel"] .panel {
+  background-image: repeating-linear-gradient(0deg, transparent 0 27px, var(--rule) 27px 28px);
+  background-origin: content-box; background-clip: padding-box;
+  border-left: 3px double var(--margin); padding-left: 26px;
+}
+[data-theme="kennel"] .card-avatar img, [data-theme="kennel"] .hero-avatar img, [data-theme="kennel"] .avatar-preview {
+  border: 6px solid #fff; border-bottom-width: 22px; box-shadow: 2px 3px 6px rgba(0, 0, 0, .3); border-radius: 0; transform: rotate(-2deg);
+}
+[data-theme="kennel"] .badge, [data-theme="kennel"] .chip.low {
+  background: transparent; color: var(--stamp); border: 3px double var(--stamp); border-radius: 4px;
+  font-family: var(--font-display); text-transform: uppercase; letter-spacing: .12em; transform: rotate(-7deg);
+}
+[data-theme="kennel"] .card .badge { top: 16px; right: 10px; }
+[data-theme="kennel"] .chip { background: transparent; border-style: dashed; border-radius: 2px; }
+[data-theme="kennel"] .theme-tab { background: #efe3bd; color: var(--muted); border-radius: 6px 6px 0 0; border-bottom-width: 0; box-shadow: none; margin-bottom: 0; }
+[data-theme="kennel"] .theme-tab[aria-selected="true"] { background: var(--card); color: var(--ink); border-color: var(--ink); position: relative; top: 1.5px; }
+[data-theme="kennel"] .themes { border-bottom: 1.5px solid var(--ink); gap: 4px; align-items: flex-end; }
+[data-theme="kennel"] code { font-family: inherit; font-weight: 700; }
+[data-theme="kennel"] .meter-bar { background: repeating-linear-gradient(90deg, var(--rule) 0 2px, transparent 2px 6px); border-radius: 0; height: 10px; }
+[data-theme="kennel"] .meter-bar > span { border-radius: 0; }
+[data-theme="kennel"] .bubble { background: #fff; border-style: dashed; }
+[data-theme="kennel"] .btn, [data-theme="kennel"] .theme-tab { font-family: var(--font-display); }
+
+/* ======================================================================= */
+/* 3. Nightlight: the pet's room after dark. A warm lamp behind the avatar, */
+/*    everything else in soft blue shadow. Soft serif for the names.        */
+/* ======================================================================= */
+[data-theme="nightlight"] {
+  --night: #121830; --deep: #0b0f1f; --lamp: #ffc77a; --moon: #cfd7ee;
+  --bg: var(--night); --surface: rgba(255, 255, 255, .05); --surface-2: rgba(255, 255, 255, .09); --ink: #e9ecf6; --muted: #98a0bc;
+  --line: rgba(207, 215, 238, .18); --accent: var(--lamp); --accent-ink: #2a1c05; --danger: #ff8c7a; --ok: #9ad8a3;
+  --radius: 18px; --radius-sm: 10px; --border-w: 1px; --shadow: none;
+  --font-body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --size: 16px;
+}
+[data-theme="nightlight"] body {
+  background-color: var(--night);
+  background-image: radial-gradient(900px 600px at 50% -10%, #263258 0%, var(--night) 70%, transparent 100%);
+  background-repeat: no-repeat;
+}
+[data-theme="nightlight"] input[type="radio"] { accent-color: var(--lamp); }
+[data-theme="nightlight"] h1, [data-theme="nightlight"] h2, [data-theme="nightlight"] .brand-name, [data-theme="nightlight"] legend, [data-theme="nightlight"] summary {
+  font-weight: 500; font-variation-settings: "SOFT" 100, "opsz" 144; letter-spacing: -.01em;
+}
+[data-theme="nightlight"] .brand-name { color: var(--lamp); }
+[data-theme="nightlight"] .card-avatar, [data-theme="nightlight"] .hero-avatar { position: relative; isolation: isolate; }
+[data-theme="nightlight"] .card-avatar::before, [data-theme="nightlight"] .hero-avatar::before {
+  content: ""; position: absolute; inset: 10%; border-radius: 50%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(255, 199, 122, .55), rgba(255, 199, 122, .12) 60%, transparent);
+  filter: blur(6px);
+}
+[data-theme="nightlight"] .hero-avatar::before { inset: -20%; filter: blur(14px); }
+[data-theme="nightlight"] .card-avatar img, [data-theme="nightlight"] .hero-avatar img { border-radius: 50%; box-shadow: 0 0 40px rgba(255, 199, 122, .35); }
+[data-theme="nightlight"] .btn { background: transparent; border-color: var(--line); color: var(--ink); border-radius: 999px; }
+[data-theme="nightlight"] .btn-primary { background: var(--lamp); color: var(--accent-ink); border-color: var(--lamp); box-shadow: 0 0 24px rgba(255, 199, 122, .35); }
+[data-theme="nightlight"] .btn-danger { color: var(--danger); border-color: var(--danger); }
+[data-theme="nightlight"] .theme-tab { background: transparent; color: var(--muted); border-radius: 999px; }
+[data-theme="nightlight"] .theme-tab[aria-selected="true"] { background: var(--surface-2); color: var(--lamp); border-color: var(--lamp); }
+[data-theme="nightlight"] .chip { background: var(--surface-2); border-color: transparent; }
+[data-theme="nightlight"] .chip.low { background: rgba(255, 140, 122, .15); border-color: transparent; }
+[data-theme="nightlight"] .badge { background: var(--danger); color: #2a0b06; }
+[data-theme="nightlight"] .meter-bar { height: 6px; border: 0; background: var(--surface-2); }
+[data-theme="nightlight"] .meter-bar > span { box-shadow: 0 0 10px rgba(255, 199, 122, .6); }
+[data-theme="nightlight"] textarea, [data-theme="nightlight"] input, [data-theme="nightlight"] select { background: var(--deep); color: var(--ink); }
+[data-theme="nightlight"] select option { background: var(--deep); }
+[data-theme="nightlight"] .bubble { background: var(--surface-2); border-color: transparent; }
+[data-theme="nightlight"] .errors { background: rgba(255, 140, 122, .1); }
+[data-theme="nightlight"] .quote { color: var(--moon); font-family: var(--font-display); font-size: 1.2rem; }
+
+/* ======================================================================= */
+/* 4. Sticker: a kid's sticker album. Sunny page, white die-cut stickers    */
+/*    with thick outlines, each one stuck on slightly crooked.              */
+/* ======================================================================= */
+[data-theme="sticker"] {
+  --page: #ffd45c; --candy: #ff4f85; --mint: #2fc39a; --sky: #3d8bff; --outline: #222;
+  --bg: var(--page); --surface: #fff; --surface-2: #fff4cc; --ink: var(--outline); --muted: #5c5346;
+  --line: var(--outline); --accent: var(--candy); --accent-ink: #fff; --danger: #e0323e; --ok: var(--mint);
+  --radius: 22px; --radius-sm: 14px; --border-w: 3px; --shadow: 0 0 0 5px #fff, 0 0 0 7px var(--outline), 6px 8px 0 7px rgba(0, 0, 0, .12);
+  --font-body: "Fredoka", "Trebuchet MS", "Segoe UI", sans-serif; --font-display: var(--font-body);
+  --size: 17px;
+}
+[data-theme="sticker"] body {
+  background-color: var(--page);
+  background-image: radial-gradient(#fff 2px, transparent 2.5px);
+  background-size: 28px 28px;
+}
+[data-theme="sticker"] h1, [data-theme="sticker"] h2, [data-theme="sticker"] .brand-name, [data-theme="sticker"] legend { font-weight: 700; }
+[data-theme="sticker"] .brand-name { color: #fff; -webkit-text-stroke: 2px var(--outline); paint-order: stroke fill; text-shadow: 4px 4px 0 var(--outline); font-size: 3rem; }
+[data-theme="sticker"] .tagline, [data-theme="sticker"] .back { color: #3b3326; font-weight: 500; }
+[data-theme="sticker"] .card, [data-theme="sticker"] .panel { margin: 10px; }
+[data-theme="sticker"] .gallery { gap: 30px; }
+[data-theme="sticker"] .card:nth-child(odd) { transform: rotate(-1.5deg); }
+[data-theme="sticker"] .card:nth-child(even) { transform: rotate(1.2deg); }
+[data-theme="sticker"] .card:nth-child(3n) { transform: rotate(.6deg); }
+[data-theme="sticker"] .btn { border-width: 3px; border-color: var(--outline); border-radius: 999px; box-shadow: 0 4px 0 var(--outline); font-weight: 600; }
+[data-theme="sticker"] .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--outline); }
+[data-theme="sticker"] .btn-danger { color: var(--danger); }
+[data-theme="sticker"] .theme-tab { border-width: 3px; border-radius: 999px; font-weight: 600; box-shadow: 0 3px 0 var(--outline); }
+[data-theme="sticker"] .theme-tab[aria-selected="true"] { background: var(--sky); border-color: var(--outline); color: #fff; }
+[data-theme="sticker"] .chip { background: var(--mint); color: #fff; border: 2px solid var(--outline); font-weight: 600; }
+[data-theme="sticker"] .chip.low { background: var(--danger); color: #fff; }
+[data-theme="sticker"] .chip.mood { background: var(--sky); color: #fff; }
+[data-theme="sticker"] .badge { border: 2px solid var(--outline); font-weight: 600; transform: rotate(6deg); }
+[data-theme="sticker"] .meter-bar { height: 16px; border-width: 2px; background: #fff; }
+[data-theme="sticker"] .meter-bar > span { background: var(--mint); }
+[data-theme="sticker"] .meter.mood .meter-bar > span { background: var(--sky); }
+[data-theme="sticker"] textarea, [data-theme="sticker"] input, [data-theme="sticker"] select { border-width: 2px; }
+[data-theme="sticker"] .bubble { background: var(--surface-2); border-width: 2px; }
+[data-theme="sticker"] .card-avatar img, [data-theme="sticker"] .hero-avatar img, [data-theme="sticker"] .avatar-preview { border: 3px solid var(--outline); border-radius: 50%; }
+[data-theme="sticker"] .errors { background: #fff; }
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme="sticker"] .card { transition: transform .2s; }
+  [data-theme="sticker"] .card:hover { transform: rotate(0) scale(1.02); }
+}
+
+/* ======================================================================= */
+/* 5. Comic: a strip where the pet talks. Halftone paper, inked panels with */
+/*    hard offset shadows, speech bubbles with tails for the reactions.      */
+/* ======================================================================= */
+[data-theme="comic"] {
+  --paper: #fff; --ink-c: #141414; --halftone: #ffd83d; --red: #e5322d; --cyan: #2ab0e0;
+  --bg: #f7f1d8; --surface: var(--paper); --surface-2: #fff6c7; --ink: var(--ink-c); --muted: #4b4b4b;
+  --line: var(--ink-c); --accent: var(--halftone); --accent-ink: var(--ink-c); --danger: var(--red); --ok: #2a9d5c;
+  --radius: 4px; --radius-sm: 3px; --border-w: 3px; --shadow: 6px 6px 0 var(--ink-c);
+  --font-body: "Comic Neue", "Comic Sans MS", "Chalkboard SE", sans-serif;
+  --font-display: "Bangers", "Impact", "Arial Black", sans-serif;
+  --size: 17px;
+}
+[data-theme="comic"] body {
+  background-color: #f7f1d8;
+  background-image: radial-gradient(#f6dc78 1.1px, transparent 1.6px);
+  background-size: 8px 8px;
+}
+[data-theme="comic"] h1, [data-theme="comic"] h2, [data-theme="comic"] .brand-name, [data-theme="comic"] legend, [data-theme="comic"] summary, [data-theme="comic"] .card-name {
+  font-weight: 400; letter-spacing: .04em;
+}
+[data-theme="comic"] .brand-name { font-size: 3.4rem; color: var(--halftone); -webkit-text-stroke: 1.5px var(--ink-c); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink-c); }
+[data-theme="comic"] .tagline { font-weight: 700; color: var(--ink-c); }
+[data-theme="comic"] .card, [data-theme="comic"] .panel { border-width: 3px; margin: 0 6px 26px 0; }
+[data-theme="comic"] .gallery { gap: 26px; }
+[data-theme="comic"] .btn { border-width: 3px; box-shadow: 3px 3px 0 var(--ink-c); font-size: 1.1rem; letter-spacing: .05em; }
+[data-theme="comic"] .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink-c); }
+[data-theme="comic"] .btn-primary { background: var(--halftone); color: var(--ink-c); }
+[data-theme="comic"] .btn-danger { color: var(--red); }
+[data-theme="comic"] .theme-tab { border-width: 3px; box-shadow: 3px 3px 0 var(--ink-c); font-size: 1.1rem; letter-spacing: .05em; }
+[data-theme="comic"] .theme-tab[aria-selected="true"] { background: var(--cyan); color: #fff; border-color: var(--ink-c); }
+[data-theme="comic"] .chip { border-width: 2px; border-radius: 3px; background: #fff; font-weight: 700; }
+[data-theme="comic"] .chip.low { background: var(--red); color: #fff; border-color: var(--ink-c); }
+[data-theme="comic"] .badge {
+  border-radius: 0; background: var(--red); color: #fff; border: 2px solid var(--ink-c); font-family: var(--font-display); letter-spacing: .06em; font-size: 1rem;
+  clip-path: polygon(0 20%, 8% 0, 92% 0, 100% 20%, 100% 80%, 92% 100%, 8% 100%, 0 80%); padding: 3px 14px; transform: rotate(-4deg);
+}
+[data-theme="comic"] .meter-bar { height: 14px; border-width: 2px; border-radius: 0; background: #fff; }
+[data-theme="comic"] .meter-bar > span { border-radius: 0; background: var(--cyan); }
+[data-theme="comic"] .meter.mood .meter-bar > span { background: var(--halftone); }
+[data-theme="comic"] .meter.low .meter-bar > span { background: var(--red); }
+[data-theme="comic"] textarea, [data-theme="comic"] input, [data-theme="comic"] select { border-width: 2px; }
+[data-theme="comic"] .bubble { background: #fff; border-width: 3px; border-radius: 18px; margin-left: 18px; }
+[data-theme="comic"] .bubble::before, [data-theme="comic"] .bubble::after {
+  content: ""; position: absolute; left: -16px; top: 14px; border: 12px solid transparent; border-right-color: var(--ink-c); border-left: 0;
+}
+[data-theme="comic"] .bubble::after { left: -11px; top: 15px; border-width: 11px; border-right-color: #fff; }
+[data-theme="comic"] .quote { font-family: var(--font-display); font-style: normal; font-size: 1.4rem; letter-spacing: .03em; }
+[data-theme="comic"] .card-avatar img, [data-theme="comic"] .hero-avatar img, [data-theme="comic"] .avatar-preview { border: 3px solid var(--ink-c); border-radius: 0; box-shadow: 4px 4px 0 var(--ink-c); }
+[data-theme="comic"] .errors { background: #fff; }
+
+/* ======================================================================= */
+/* 6. Aquarium: the pet lives in a tank. Deep water, glass panels with a    */
+/*    highlight on the rim, the avatar inside a bubble.                     */
+/* ======================================================================= */
+[data-theme="aquarium"] {
+  --water: #0e5e6f; --deep: #052a33; --glass: rgba(191, 239, 255, .35); --coral: #ff7a59; --sand: #e8d6a8;
+  --bg: var(--water); --surface: rgba(255, 255, 255, .07); --surface-2: rgba(191, 239, 255, .14); --ink: #e9f7fa; --muted: #a6d1da;
+  --line: var(--glass); --accent: var(--coral); --accent-ink: #2b0d05; --danger: #ffb0a0; --ok: #9fe3c0;
+  --radius: 20px; --radius-sm: 12px; --border-w: 1px; --shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 30px rgba(0, 20, 30, .25);
+  --font-body: "Nunito", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: "Baloo 2", "Nunito", "Arial Rounded MT Bold", sans-serif;
+  --size: 17px;
+}
+[data-theme="aquarium"] body {
+  background-color: var(--water);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 20% 0%, rgba(191, 239, 255, .22), transparent 70%),
+    radial-gradient(ellipse 50% 30% at 80% 10%, rgba(191, 239, 255, .14), transparent 70%),
+    radial-gradient(circle at 15% 85%, rgba(255, 255, 255, .06) 0 3px, transparent 4px),
+    radial-gradient(circle at 70% 60%, rgba(255, 255, 255, .06) 0 2px, transparent 3px),
+    radial-gradient(circle at 40% 30%, rgba(255, 255, 255, .05) 0 4px, transparent 5px),
+    linear-gradient(180deg, #11707f 0%, var(--water) 35%, var(--deep) 100%);
+  background-size: 100% 100%, 100% 100%, 260px 260px, 180px 180px, 320px 320px, 100% 100%;
+  background-attachment: scroll;
+}
+[data-theme="aquarium"] h1, [data-theme="aquarium"] h2, [data-theme="aquarium"] .brand-name, [data-theme="aquarium"] legend, [data-theme="aquarium"] summary { font-weight: 700; }
+[data-theme="aquarium"] .brand-name { color: #bfefff; }
+[data-theme="aquarium"] .card-avatar, [data-theme="aquarium"] .hero-avatar {
+  position: relative; border-radius: 50%; width: 140px; height: 140px; margin: 0 auto;
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .45), rgba(255, 255, 255, .06) 45%, rgba(191, 239, 255, .18) 100%);
+  border: 1px solid rgba(255, 255, 255, .5); box-shadow: inset -6px -8px 20px rgba(0, 30, 40, .25), 0 6px 20px rgba(0, 20, 30, .25);
+}
+[data-theme="aquarium"] .hero-avatar { width: 200px; height: 200px; }
+[data-theme="aquarium"] .card-avatar img, [data-theme="aquarium"] .hero-avatar img { border-radius: 50%; width: 100px; height: 100px; }
+[data-theme="aquarium"] .hero-avatar img { width: 150px; height: 150px; }
+[data-theme="aquarium"] .btn { border-radius: 999px; color: var(--ink); border-color: var(--glass); }
+[data-theme="aquarium"] .btn-primary { background: var(--coral); color: var(--accent-ink); border-color: var(--coral); }
+[data-theme="aquarium"] .btn-danger { color: var(--danger); border-color: var(--danger); }
+[data-theme="aquarium"] .theme-tab { background: var(--surface); color: var(--muted); border-radius: 999px; }
+[data-theme="aquarium"] .theme-tab[aria-selected="true"] { background: #bfefff; color: #063a46; border-color: #bfefff; }
+[data-theme="aquarium"] .chip { border-color: transparent; }
+[data-theme="aquarium"] .chip.low { background: rgba(255, 122, 89, .25); color: #ffd9cf; }
+[data-theme="aquarium"] .badge { background: var(--coral); color: var(--accent-ink); }
+[data-theme="aquarium"] .meter-bar { border: 0; height: 10px; background: rgba(0, 20, 30, .35); }
+[data-theme="aquarium"] .meter-bar > span { background: linear-gradient(180deg, #d8f7ff, #7fd3e8); }
+[data-theme="aquarium"] .meter.low .meter-bar > span { background: var(--coral); }
+[data-theme="aquarium"] textarea, [data-theme="aquarium"] input, [data-theme="aquarium"] select { background: rgba(0, 20, 30, .35); color: var(--ink); border-color: var(--glass); }
+[data-theme="aquarium"] select option { background: var(--deep); }
+[data-theme="aquarium"] input[type="radio"] { accent-color: var(--coral); }
+[data-theme="aquarium"] .bubble { border-color: transparent; }
+[data-theme="aquarium"] .errors { background: rgba(255, 122, 89, .15); }
+
+/* ======================================================================= */
+/* 7. Picnic: a red gingham blanket, paper plates, a warm afternoon. The    */
+/*    avatar sits on a plate; everything else is paper on the cloth.        */
+/* ======================================================================= */
+[data-theme="picnic"] {
+  --check: #d7343c; --grass: #4f8a35; --kraft: #c9a66b; --brown: #2b1f12; --paper: #fffdf7;
+  --bg: #fff; --surface: var(--paper); --surface-2: #fff1c9; --ink: var(--brown); --muted: #6b5a44;
+  --line: var(--brown); --accent: var(--grass); --accent-ink: #fff; --danger: #b8232b; --ok: var(--grass);
+  --radius: 14px; --radius-sm: 8px; --border-w: 2px; --shadow: 0 6px 14px rgba(43, 31, 18, .18);
+  --font-body: "Mulish", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --size: 17px;
+}
+[data-theme="picnic"] body {
+  background-color: #fff;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(215, 52, 60, .5) 0 22px, transparent 22px 44px),
+    repeating-linear-gradient(90deg, rgba(215, 52, 60, .5) 0 22px, transparent 22px 44px);
+}
+[data-theme="picnic"] .brand-name, [data-theme="picnic"] h1 { color: var(--check); -webkit-text-stroke: 1px var(--brown); paint-order: stroke fill; }
+[data-theme="picnic"] .top, [data-theme="picnic"] .themes { background: var(--paper); padding: 16px 20px; border-radius: var(--radius); box-shadow: var(--shadow); }
+[data-theme="picnic"] .top { margin-bottom: 14px; }
+[data-theme="picnic"] .hero, [data-theme="picnic"] .status { background: var(--paper); padding: 20px 24px; border-radius: var(--radius); box-shadow: var(--shadow); }
+[data-theme="picnic"] .status { display: inline-block; padding: 6px 14px; }
+[data-theme="picnic"] .card-avatar, [data-theme="picnic"] .hero-avatar {
+  width: 136px; height: 136px; margin: 0 auto; border-radius: 50%; background: #fff;
+  box-shadow: inset 0 0 0 8px #fff, inset 0 0 0 10px #ece3cf, 0 3px 8px rgba(43, 31, 18, .2);
+}
+[data-theme="picnic"] .hero-avatar { width: 200px; height: 200px; box-shadow: inset 0 0 0 12px #fff, inset 0 0 0 15px #ece3cf, 0 4px 12px rgba(43, 31, 18, .25); }
+[data-theme="picnic"] .card-avatar img, [data-theme="picnic"] .hero-avatar img { border-radius: 50%; width: 96px; height: 96px; }
+[data-theme="picnic"] .hero-avatar img { width: 150px; height: 150px; }
+[data-theme="picnic"] .btn { border-radius: 999px; font-size: 1.05rem; letter-spacing: .02em; }
+[data-theme="picnic"] .theme-tab { border-radius: 999px; }
+[data-theme="picnic"] .theme-tab[aria-selected="true"] { background: var(--check); border-color: var(--brown); }
+[data-theme="picnic"] .chip { background: var(--surface-2); border-color: var(--kraft); }
+[data-theme="picnic"] .chip.low { background: #fde0e1; }
+[data-theme="picnic"] .badge { border: 2px solid var(--brown); }
+[data-theme="picnic"] .meter-bar { background: #fff; }
+[data-theme="picnic"] .meter.low .meter-bar > span { background: var(--check); }
+[data-theme="picnic"] .bubble { background: var(--surface-2); border-color: var(--kraft); }
+[data-theme="picnic"] .card-avatar, [data-theme="picnic"] .hero-avatar { overflow: hidden; }
+
+/* ======================================================================= */
+/* 8. Blueprint: the pet as a build project. Cyanotype blue, white line     */
+/*    work, grid paper, hatched meters, crosshairs on the avatar.           */
+/* ======================================================================= */
+[data-theme="blueprint"] {
+  --blue: #163f8f; --blue-deep: #0f2f6e; --white: #eaf1ff; --pencil: #ffd166;
+  --bg: var(--blue); --surface: rgba(255, 255, 255, .04); --surface-2: rgba(255, 255, 255, .1); --ink: var(--white); --muted: #a9bde8;
+  --line: rgba(234, 241, 255, .7); --accent: var(--white); --accent-ink: var(--blue-deep); --danger: #ffa094; --ok: #a8f0c6;
+  --radius: 2px; --radius-sm: 2px; --border-w: 1.5px; --shadow: none;
+  --font-body: "Saira", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: "Saira Condensed", "Arial Narrow", "Saira", sans-serif;
+  --size: 17px;
+}
+[data-theme="blueprint"] body {
+  background-color: var(--blue);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .16) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .16) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .07) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+[data-theme="blueprint"] h1, [data-theme="blueprint"] h2, [data-theme="blueprint"] .brand-name, [data-theme="blueprint"] legend, [data-theme="blueprint"] summary, [data-theme="blueprint"] .btn, [data-theme="blueprint"] .theme-tab { font-weight: 600; letter-spacing: .03em; }
+[data-theme="blueprint"] .brand-name { font-size: 3rem; }
+[data-theme="blueprint"] .card, [data-theme="blueprint"] .panel { position: relative; }
+[data-theme="blueprint"] .card::after, [data-theme="blueprint"] .panel::after {
+  content: ""; position: absolute; inset: 5px; border: 1px dashed rgba(234, 241, 255, .35); pointer-events: none;
+}
+[data-theme="blueprint"] .card-avatar, [data-theme="blueprint"] .hero-avatar { position: relative; }
+[data-theme="blueprint"] .card-avatar::before, [data-theme="blueprint"] .hero-avatar::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 130px; height: 130px; transform: translate(-50%, -50%);
+  border: 1px solid var(--line); border-radius: 50%;
+  background: linear-gradient(var(--line), var(--line)) center/100% 1px no-repeat, linear-gradient(var(--line), var(--line)) center/1px 100% no-repeat;
+  opacity: .7;
+}
+[data-theme="blueprint"] .hero-avatar::before { width: 190px; height: 190px; }
+[data-theme="blueprint"] .card-avatar img, [data-theme="blueprint"] .hero-avatar img { position: relative; border-radius: 50%; filter: grayscale(1) contrast(1.1); mix-blend-mode: screen; opacity: .9; }
+[data-theme="blueprint"] .card-avatar > span, [data-theme="blueprint"] .hero-avatar > span { position: relative; filter: grayscale(1) brightness(1.6); }
+[data-theme="blueprint"] .btn { background: transparent; color: var(--white); border-color: var(--white); }
+[data-theme="blueprint"] .btn-primary { background: var(--white); color: var(--blue-deep); }
+[data-theme="blueprint"] .btn-danger { color: var(--danger); border-color: var(--danger); }
+[data-theme="blueprint"] .theme-tab { background: transparent; color: var(--white); border-color: var(--line); }
+[data-theme="blueprint"] .theme-tab[aria-selected="true"] { background: var(--pencil); color: var(--blue-deep); border-color: var(--pencil); }
+[data-theme="blueprint"] .chip { background: transparent; border-style: dashed; }
+[data-theme="blueprint"] .chip.low { background: var(--pencil); color: var(--blue-deep); border-style: solid; border-color: var(--pencil); }
+[data-theme="blueprint"] .badge { background: var(--pencil); color: var(--blue-deep); border-radius: 0; }
+[data-theme="blueprint"] .meter-bar { border-radius: 0; height: 14px; background: transparent; }
+[data-theme="blueprint"] .meter-bar > span { border-radius: 0; background: repeating-linear-gradient(135deg, var(--white) 0 2px, transparent 2px 7px); }
+[data-theme="blueprint"] .meter.low .meter-bar > span { background: var(--pencil); }
+[data-theme="blueprint"] .meter.low .meter-word { color: var(--pencil); }
+[data-theme="blueprint"] textarea, [data-theme="blueprint"] input, [data-theme="blueprint"] select { background: rgba(15, 47, 110, .6); color: var(--white); }
+[data-theme="blueprint"] select option { background: var(--blue-deep); }
+[data-theme="blueprint"] input[type="radio"] { accent-color: var(--pencil); }
+[data-theme="blueprint"] .bubble { background: transparent; border-style: solid; }
+[data-theme="blueprint"] .errors { background: rgba(255, 160, 148, .12); }
+[data-theme="blueprint"] :focus-visible { outline-color: var(--pencil); }
+
+/* ======================================================================= */
+/* 9. Zoo signs: wayfinding plates at a zoo. Green sign boards with cream   */
+/*    lettering and a screw in each corner, mustard for anything to notice. */
+/* ======================================================================= */
+[data-theme="zoo"] {
+  --sign: #1d5c3a; --cream: #f3e9cf; --mustard: #e3b23c; --khaki: #d6ccab; --bark: #3a2a16;
+  --bg: var(--khaki); --surface: var(--sign); --surface-2: rgba(243, 233, 207, .14); --ink: var(--cream); --muted: #bfd3c3;
+  --line: var(--cream); --accent: var(--mustard); --accent-ink: var(--bark); --danger: #f0a070; --ok: #b6e0a8;
+  --radius: 12px; --radius-sm: 6px; --border-w: 3px; --shadow: 0 0 0 4px var(--sign), 0 6px 0 4px rgba(58, 42, 22, .35);
+  --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Archivo Black", "Arial Black", "Helvetica Neue", sans-serif;
+  --size: 16px;
+}
+[data-theme="zoo"] body {
+  background-color: var(--khaki); color: var(--bark);
+  background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .18) 0 14px, transparent 14px 28px);
+}
+[data-theme="zoo"] .top, [data-theme="zoo"] .status, [data-theme="zoo"] .back, [data-theme="zoo"] .tagline, [data-theme="zoo"] main > h1, [data-theme="zoo"] .hero { color: var(--bark); }
+[data-theme="zoo"] .brand-name { color: var(--sign); }
+[data-theme="zoo"] .hero-text .lead { color: var(--bark); }
+[data-theme="zoo"] .hero-text .quote { color: #5a4630; }
+[data-theme="zoo"] .card, [data-theme="zoo"] .panel { position: relative; margin: 6px 6px 28px; }
+[data-theme="zoo"] .card::before, [data-theme="zoo"] .card::after, [data-theme="zoo"] .panel::before, [data-theme="zoo"] .panel::after {
+  content: ""; position: absolute; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #b9b19a 60%, #6e6652); top: 7px;
+}
+[data-theme="zoo"] .card::before, [data-theme="zoo"] .panel::before { left: 7px; }
+[data-theme="zoo"] .card::after, [data-theme="zoo"] .panel::after { right: 7px; }
+[data-theme="zoo"] .gallery { gap: 24px; }
+[data-theme="zoo"] .card-avatar, [data-theme="zoo"] .hero-avatar { border-radius: 50%; background: var(--cream); width: 128px; height: 128px; margin: 0 auto; overflow: hidden; }
+[data-theme="zoo"] .hero-avatar { width: 190px; height: 190px; box-shadow: 0 0 0 4px var(--sign), 0 0 0 8px var(--cream); }
+[data-theme="zoo"] .card-avatar img, [data-theme="zoo"] .hero-avatar img { border-radius: 50%; width: 100px; height: 100px; }
+[data-theme="zoo"] .hero-avatar img { width: 150px; height: 150px; }
+[data-theme="zoo"] .card, [data-theme="zoo"] .panel { color: var(--cream); }
+[data-theme="zoo"] .card-name a, [data-theme="zoo"] .panel h2 { color: var(--cream); }
+[data-theme="zoo"] .panel .hint, [data-theme="zoo"] .panel .inline-status, [data-theme="zoo"] .card .muted { color: var(--muted); }
+[data-theme="zoo"] .btn { background: var(--cream); color: var(--bark); border-color: var(--bark); border-width: 2px; border-radius: 8px; }
+[data-theme="zoo"] .btn-primary { background: var(--mustard); }
+[data-theme="zoo"] .btn-danger { color: #b8232b; }
+[data-theme="zoo"] .theme-tab { background: var(--sign); color: var(--cream); border-color: var(--cream); border-width: 2px; border-radius: 8px; box-shadow: 0 0 0 2px var(--sign); }
+[data-theme="zoo"] .theme-tab[aria-selected="true"] { background: var(--mustard); color: var(--bark); border-color: var(--bark); box-shadow: 0 0 0 2px var(--mustard); }
+[data-theme="zoo"] .chip { background: var(--cream); color: var(--bark); border: 0; font-weight: 600; }
+[data-theme="zoo"] .chip.low { background: var(--mustard); color: var(--bark); }
+[data-theme="zoo"] .badge { background: var(--mustard); color: var(--bark); border-radius: 4px; font-weight: 600; }
+[data-theme="zoo"] .meter-bar { background: rgba(0, 0, 0, .25); border: 0; height: 14px; border-radius: 4px; }
+[data-theme="zoo"] .meter-bar > span { background: var(--cream); }
+[data-theme="zoo"] .meter.low .meter-bar > span { background: var(--mustard); }
+[data-theme="zoo"] .meter.low .meter-word { color: var(--mustard); }
+[data-theme="zoo"] textarea, [data-theme="zoo"] input, [data-theme="zoo"] select { background: var(--cream); color: var(--bark); border-color: var(--bark); border-width: 2px; }
+[data-theme="zoo"] input[type="radio"] { accent-color: var(--mustard); }
+[data-theme="zoo"] .bubble { background: var(--cream); color: var(--bark); border: 0; }
+[data-theme="zoo"] .errors { background: var(--cream); color: #b8232b; }
+[data-theme="zoo"] .rx-warn { color: var(--danger); }
+[data-theme="zoo"] code { color: inherit; }
+
+/* ======================================================================= */
+/* 10. Theater: the pet performs. Velvet curtain across the top, marquee    */
+/*     bulbs around every board, a spotlight on the avatar.                 */
+/* ======================================================================= */
+[data-theme="theater"] {
+  --velvet: #7a1226; --velvet-dark: #4e0a18; --gold: #e0b347; --stage: #1a1214; --board: #241a1d; --cream: #f6e7c8;
+  --bg: var(--stage); --surface: var(--board); --surface-2: #332327; --ink: var(--cream); --muted: #c4a98a;
+  --line: var(--gold); --accent: var(--gold); --accent-ink: #2a1a05; --danger: #ff9b8a; --ok: #c9e39a;
+  --radius: 12px; --radius-sm: 6px; --border-w: 4px; --shadow: 0 8px 30px rgba(0, 0, 0, .5);
+  --font-body: "Lora", "Iowan Old Style", Georgia, serif;
+  --font-display: "Limelight", "Didot", "Bodoni MT", Georgia, serif;
+  --size: 17px;
+}
+[data-theme="theater"] body { background: var(--stage); }
+[data-theme="theater"] .top {
+  background: repeating-linear-gradient(90deg, var(--velvet) 0 26px, #8f1a31 26px 40px, var(--velvet-dark) 40px 56px);
+  padding: 26px 28px 22px; border-radius: 6px 6px 40% 40% / 6px 6px 18px 18px; border-bottom: 5px double var(--gold);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .55); margin-bottom: 30px;
+}
+[data-theme="theater"] .brand-name, [data-theme="theater"] .top h1 { color: var(--gold); text-shadow: 0 2px 0 #3a1a05, 0 0 24px rgba(224, 179, 71, .45); }
+[data-theme="theater"] .tagline, [data-theme="theater"] .back { color: var(--cream); }
+[data-theme="theater"] h1, [data-theme="theater"] h2, [data-theme="theater"] legend, [data-theme="theater"] summary { font-weight: 400; color: var(--gold); }
+[data-theme="theater"] .card, [data-theme="theater"] .panel { border-style: dotted; }
+[data-theme="theater"] .card-avatar, [data-theme="theater"] .hero-avatar {
+  position: relative; isolation: isolate;
+}
+[data-theme="theater"] .card-avatar::before, [data-theme="theater"] .hero-avatar::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 170px; height: 170px; transform: translate(-50%, -50%); z-index: -1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(246, 231, 200, .32), rgba(246, 231, 200, .06) 60%, transparent 100%);
+}
+[data-theme="theater"] .hero-avatar::before { width: 260px; height: 260px; }
+[data-theme="theater"] .card-avatar img, [data-theme="theater"] .hero-avatar img { border-radius: 50%; border: 3px solid var(--gold); }
+[data-theme="theater"] .btn { background: transparent; color: var(--gold); border-width: 2px; }
+[data-theme="theater"] .btn-primary { background: var(--gold); color: var(--accent-ink); }
+[data-theme="theater"] .btn-danger { color: var(--danger); border-color: var(--danger); }
+[data-theme="theater"] .theme-tab { background: var(--board); color: var(--cream); border-width: 2px; border-color: #5a4a3a; }
+[data-theme="theater"] .theme-tab[aria-selected="true"] { background: var(--gold); color: var(--accent-ink); border-color: var(--gold); }
+[data-theme="theater"] .chip { background: transparent; border: 1px solid var(--gold); color: var(--cream); }
+[data-theme="theater"] .chip.low { background: var(--velvet); border-color: var(--velvet); color: #fff; }
+[data-theme="theater"] .badge { background: var(--velvet); border: 1px solid var(--gold); }
+[data-theme="theater"] .meter-bar { border: 1px solid #5a4a3a; height: 10px; background: #130d0f; }
+[data-theme="theater"] .meter-bar > span { background: linear-gradient(90deg, #b88a2a, var(--gold)); }
+[data-theme="theater"] .meter.low .meter-bar > span { background: var(--velvet); }
+[data-theme="theater"] textarea, [data-theme="theater"] input, [data-theme="theater"] select { background: #130d0f; color: var(--cream); border: 1px solid #5a4a3a; }
+[data-theme="theater"] select option { background: #130d0f; }
+[data-theme="theater"] input[type="radio"] { accent-color: var(--gold); }
+[data-theme="theater"] .bubble { border: 1px solid var(--gold); background: var(--surface-2); }
+[data-theme="theater"] .quote { color: var(--gold); }
+[data-theme="theater"] .errors { background: var(--board); border-width: 1px; }
+[data-theme="theater"] .card-name a { color: var(--gold); }

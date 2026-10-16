@@ -2,61 +2,98 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pet room</title>
+<link rel="stylesheet" href="/theme.css">
+<script src="/theme.js"></script>
 </head>
 <body>
-<p><a href="/">Back to all pets</a></p>
-<p id="status">Loading...</p>
-<div id="errors" hidden><h2>Errors</h2><ul id="error-list"></ul></div>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><a class="back" href="/">All pets</a></div>
+</header>
+
+<main>
+<p id="status" class="status">Loading...</p>
+<div id="errors" class="errors" hidden><h2>Something went wrong</h2><ul id="error-list"></ul></div>
 
 <div id="room" hidden>
-  <div id="avatar"></div>
-  <h1 id="name"></h1>
-  <p id="description"></p>
-  <ul>
-    <li>Age: <span id="age"></span></li>
-    <li>Owner: <span id="owner"></span></li>
-    <li>Who can care: <span id="care"></span></li>
-    <li>Slack channel: <code id="channel"></code></li>
-    <li>Here now: <span id="presence">just you</span></li>
-  </ul>
+  <section class="hero">
+    <div id="avatar" class="hero-avatar"></div>
+    <div class="hero-text">
+      <h1 id="name"></h1>
+      <p id="description" class="lead"></p>
+      <p id="status-line" class="quote"></p>
+    </div>
+  </section>
 
-  <h2>Current state</h2>
-  <ul id="state"></ul>
-  <p id="status-line"></p>
+  <div class="room-grid">
+    <div>
+      <section class="panel">
+        <h2 id="talk-title">Talk to the pet</h2>
+        <p id="no-care" class="muted" hidden>Only the listed carers can talk to this pet. You can still watch.</p>
+        <form id="interact" hidden>
+          <p class="field"><label><span class="hint">What do you do or say?</span><textarea id="text" maxlength="200" rows="3" placeholder="Feed it, play with it, tell it about your day..." required></textarea></label>
+          <span class="hint"><span id="count">0</span>/200. The pet's memory of this and its reaction go to <code class="channel-name"></code>.</span></p>
+          <div class="actions"><button type="submit" class="btn btn-primary" id="send">Send</button> <span id="progress" class="inline-status" role="status"></span></div>
+        </form>
+        <p id="typing" class="muted" aria-live="polite"></p>
+        <p id="queue" class="muted"></p>
+        <p id="notice" class="muted"></p>
+      </section>
 
-  <h2>Interact</h2>
-  <p id="no-care" hidden>Only the listed carers can interact with this pet. You can still watch.</p>
-  <form id="interact" hidden>
-    <textarea id="text" maxlength="200" rows="3" cols="60" placeholder="Feed it, play with it, tell it about your day..." required></textarea><br>
-    <small><span id="count">0</span>/200. The pet's memory of this and its reaction will be posted to <code class="channel-name"></code>.</small><br>
-    <button type="submit" id="send">Send</button> <span id="progress"></span>
-  </form>
-  <p id="typing"></p>
-  <p id="queue"></p>
-  <p id="notice"></p>
+      <section class="panel">
+        <h2>Reactions</h2>
+        <p id="no-reactions" class="muted" hidden>Nothing yet. The first reaction shows up here.</p>
+        <ol id="reactions" class="reactions"></ol>
+      </section>
+    </div>
 
-  <h2>Reactions</h2>
-  <ul id="reactions"></ul>
+    <div>
+      <section class="panel">
+        <h2>How it feels</h2>
+        <div id="state" class="meter-list"></div>
+        <p id="last-visit" class="muted" style="margin-top:12px"></p>
+      </section>
 
-  <div id="owner-tools" hidden>
-    <h2>Owner tools</h2>
-    <form id="edit">
-      <fieldset>
-        <legend>Who can care</legend>
-        <label><input type="radio" name="care" value="owner"> Individual: only I care</label><br>
-        <label><input type="radio" name="care" value="everyone"> Public: everyone cares</label><br>
-        <label><input type="radio" name="care" value="group"> Group: I and these people care</label><br>
-        <p id="carers-box" hidden><label>Emails, one per line or comma separated<br><textarea id="carers" rows="3" cols="60"></textarea></label></p>
-      </fieldset>
-      <p><label>Slack channel <input id="edit-channel" size="30"></label><br>
-      <small>The Spot app must be a member of the channel.</small></p>
-      <p><label>Description (max 200)<br><textarea id="edit-description" maxlength="200" rows="3" cols="60" required></textarea></label></p>
-      <p><label>Soul (max 600)<br><textarea id="edit-soul" maxlength="600" rows="6" cols="60" required></textarea></label></p>
-      <p><button type="submit">Save</button> <span id="edit-status"></span></p>
-    </form>
-    <p><button type="button" id="dismiss">Dismiss this pet</button> <span id="dismiss-status"></span></p>
+      <section class="panel">
+        <h2>About</h2>
+        <dl class="facts">
+          <dt>Age</dt><dd id="age"></dd>
+          <dt>Owner</dt><dd id="owner"></dd>
+          <dt>Who can care</dt><dd id="care"></dd>
+          <dt>Slack channel</dt><dd><code id="channel"></code></dd>
+          <dt>Here now</dt><dd id="presence">just you</dd>
+        </dl>
+      </section>
+
+      <section id="owner-tools" class="panel" hidden>
+        <details>
+          <summary>Owner tools</summary>
+          <div>
+          <form id="edit">
+            <fieldset>
+              <legend>Who can care</legend>
+              <div class="choice">
+                <label><input type="radio" name="care" value="owner"> <span>Only me</span></label>
+                <label><input type="radio" name="care" value="everyone"> <span>Everyone on the team</span></label>
+                <label><input type="radio" name="care" value="group"> <span>Me and a few people</span></label>
+              </div>
+              <p class="field" id="carers-box" hidden><label><span>Their emails</span><textarea id="carers" rows="3"></textarea></label><span class="hint">One per line, or separated by commas.</span></p>
+            </fieldset>
+            <p class="field"><label><span>Slack channel</span><input id="edit-channel"></label><span class="hint">The Spot app must be a member of the channel.</span></p>
+            <p class="field"><label><span>Description</span><textarea id="edit-description" maxlength="200" rows="3" required></textarea></label><span class="hint">Up to 200 characters.</span></p>
+            <p class="field"><label><span>Soul</span><textarea id="edit-soul" maxlength="600" rows="6" required></textarea></label><span class="hint">Up to 600 characters.</span></p>
+            <div class="actions"><button type="submit" class="btn">Save changes</button> <span id="edit-status" class="inline-status" role="status"></span></div>
+          </form>
+          <div class="actions" style="margin-top:20px"><button type="button" class="btn btn-danger" id="dismiss">Dismiss this pet</button> <span id="dismiss-status" class="inline-status" role="status"></span></div>
+          </div>
+        </details>
+      </section>
+    </div>
   </div>
+</div>
+</main>
 </div>
 
 <script src="/spot.js"></script>
@@ -93,23 +130,36 @@
   // ------------------------------------------------------------ rendering
   function renderPet() {
     $('avatar').replaceChildren(P.avatarNode(pet, 160));
-    $('name').textContent = pet.name + ' ' + (pet.kind === 'custom' ? '🎨' : pet.emoji);
+    $('name').textContent = pet.name;
+    $('talk-title').textContent = 'Talk to ' + pet.name;
     $('description').textContent = pet.description;
-    $('age').textContent = P.ageDays(pet.created_at) + ' days';
+    const age = P.ageDays(pet.created_at);
+    $('age').textContent = age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's');
     $('owner').textContent = pet.owner;
-    $('care').textContent = P.careText(pet);
+    $('care').replaceChildren(P.careNode(pet));
     $('channel').textContent = pet.channel;
     document.querySelectorAll('.channel-name').forEach((n) => { n.textContent = pet.channel; });
   }
 
   function renderState() {
     const eff = effectiveState(state);
-    const row = (field, title) => el('li', { text: title + ': ' + label(field, eff[field]) + ' (' + eff[field] + ')' });
+    const meter = (field, title, word, lowBelow) => {
+      const value = Math.round(eff[field]);
+      const bar = el('div', { class: 'meter-bar', role: 'meter', 'aria-label': title, 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(value) },
+        [el('span', { style: 'width:' + value + '%' })]);
+      return el('div', { class: 'meter ' + field + (value < lowBelow ? ' low' : '') }, [
+        el('span', { class: 'meter-name', text: title }),
+        el('span', { class: 'meter-word', text: word }),
+        bar,
+      ]);
+    };
     $('state').replaceChildren(
-      el('li', { text: 'Mood: ' + (eff.mood_word || label('mood', eff.mood)) + ' (' + eff.mood + ')' }),
-      row('food', 'Food'), row('energy', 'Energy'), row('health', 'Health'),
-      el('li', { text: 'Last visit: ' + (eff.last_interaction_at ? P.humanDuration(P.hoursAgo(eff.last_interaction_at)) + ' ago' : 'never') }),
+      meter('mood', 'Mood', eff.mood_word || label('mood', eff.mood), 40),
+      meter('food', 'Food', label('food', eff.food), 25),
+      meter('energy', 'Energy', label('energy', eff.energy), 40),
+      meter('health', 'Health', label('health', eff.health), 50),
     );
+    $('last-visit').textContent = 'Last visit: ' + (eff.last_interaction_at ? P.humanDuration(P.hoursAgo(eff.last_interaction_at)) + ' ago' : 'none yet');
     $('status-line').textContent = eff.status_line ? '“' + eff.status_line + '”' : '';
   }
 
@@ -119,20 +169,27 @@
   function renderReactions() {
     const list = Object.values(inters).sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 30);
     $('reactions').replaceChildren();
+    $('no-reactions').hidden = list.length > 0;
     list.forEach((i) => {
       const when = new Date(i.created_at).toLocaleString();
-      const li = el('li');
-      li.appendChild(el('div', { text: when + ' · ' + i.actor_name + ': ' + i.text }));
+      const li = el('li', { class: 'rx ' + i.status });
+      li.appendChild(el('div', { class: 'rx-in' }, [
+        el('div', {}, [el('span', { class: 'rx-who', text: i.actor_name }), el('time', { class: 'rx-when', datetime: i.created_at, text: when })]),
+        el('p', { class: 'rx-text', text: i.text }),
+      ]));
       if (i.status === 'done') {
-        li.appendChild(el('div', { text: '🗒 ' + i.memory }));
-        li.appendChild(el('div', { text: '💬 ' + i.reaction }));
-        if (i.state_after) li.appendChild(el('div', { text: 'mood: ' + i.state_after.mood_word + ' · food ' + i.state_after.food + ' · mood ' + i.state_after.mood + ' · energy ' + i.state_after.energy + ' · health ' + i.state_after.health }));
-        if (i.slack_error) li.appendChild(el('div', { text: '⚠ Slack: ' + i.slack_error }));
-        else if (i.slack_ts) li.appendChild(el('div', { text: 'Posted to ' + pet.channel }));
+        li.appendChild(el('p', { class: 'bubble', text: i.reaction }));
+        li.appendChild(el('p', { class: 'rx-memory', text: 'Remembers: ' + i.memory }));
+        if (i.state_after) {
+          const s = i.state_after;
+          li.appendChild(el('p', { class: 'rx-after', text: 'Now ' + s.mood_word + '. Food ' + s.food + ', mood ' + s.mood + ', energy ' + s.energy + ', health ' + s.health + '.' }));
+        }
+        if (i.slack_error) li.appendChild(el('p', { class: 'rx-warn', text: 'Slack post failed: ' + i.slack_error }));
+        else if (i.slack_ts) li.appendChild(el('p', { class: 'rx-slack', text: 'Posted to ' + pet.channel }));
       } else if (i.status === 'failed') {
-        li.appendChild(el('div', { text: '⚠ The pet could not react. AI: ' + (i.ai_error || 'unknown error') }));
+        li.appendChild(el('p', { class: 'rx-warn', text: 'The pet could not react. AI: ' + (i.ai_error || 'unknown error') }));
       } else {
-        li.appendChild(el('div', { text: '⏳ ' + (i.status === 'processing' ? 'the pet is reacting...' : 'waiting in line' + (i.ticket ? ' (ticket ' + i.ticket + ')' : '')) }));
+        li.appendChild(el('p', { class: 'rx-wait', text: i.status === 'processing' ? 'The pet is reacting...' : 'Waiting in line' + (i.ticket ? ', ticket ' + i.ticket : '') }));
       }
       $('reactions').appendChild(li);
     });

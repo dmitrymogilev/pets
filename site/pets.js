@@ -101,6 +101,18 @@
     return pet.owner + ' (owner only)';
   }
 
+  // The care list as DOM: one email per line, so long addresses never break
+  // mid-word in narrow columns.
+  function careNode(pet) {
+    const parts = careText(pet).split(', ');
+    const frag = document.createDocumentFragment();
+    parts.forEach((part, i) => {
+      if (i) frag.appendChild(document.createElement('br'));
+      frag.appendChild(document.createTextNode(part));
+    });
+    return frag;
+  }
+
   function canCare(pet, me) {
     const email = lower(me && me.email);
     if (!email) return false;
@@ -581,7 +593,7 @@
   window.Pets = {
     DEFAULT_CHANNEL, LIMITS, TEMPLATES, STALE_MS, templateByKey, db, strip,
     errText, isLocal, alias, restoreNames, ageDays, hoursAgo, humanDuration,
-    careText, canCare, isOwner, lower,
+    careText, careNode, canCare, isOwner, lower,
     initialState, effectiveState, label, stateSummary, needsAttention,
     sendSlack, farewellText, petUrl,
     enqueue, loadPetBundle, processInteraction, queueTick, runDigests,
