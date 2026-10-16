@@ -151,28 +151,51 @@ deploy; the Spot apex is reachable only from inside the mesh.
   Commits are authored by the current git user only.
 - Commit only when the user asks.
 
-### Branch policy: main only
+### Branch policy: branch and pull request
 
-- There is a single branch, `main`. Do not create feature branches, do not open pull or
-  merge requests. Commit directly on `main` and push to `origin main`.
-- Always assume a teammate may have pushed to `main` and that the local `main` is stale.
-  Never push without integrating remote changes first.
+- `main` is protected. Nobody pushes to it directly, including the owner. Every change
+  reaches `main` through a pull request.
+- Start every change from a fresh `main`:
 
-### Push flow
+  ```
+  git fetch origin
+  git switch -c <branch> origin/main
+  ```
 
-Run this sequence every time you push:
+- Branch names are short and lowercase, with dashes: `readme`, `fix-about-tagline`.
+- Commit on the branch. Push it and open the pull request with `gh`:
+
+  ```
+  git push -u origin <branch>
+  gh pr create --fill
+  ```
+
+- The pull request title and body follow the house style. The body says what changed and
+  why, in a few short sentences.
+- Reviews are optional. Any collaborator may merge their own pull request. The only merge
+  method is rebase, so history stays linear with no merge commits:
+
+  ```
+  gh pr merge --rebase --delete-branch
+  ```
+
+- Merge only when the user asks. Pull requests from outside collaborators are reviewed and
+  merged the same way by a collaborator.
+- There is no CI. Run the UI check against the local preview before opening or merging a
+  pull request.
+
+### Keeping the branch current
+
+Always assume a teammate may have merged to `main` and that the branch is stale. Before
+opening or merging a pull request, rebase the branch on the latest `main`:
 
 ```
 git fetch origin
-git pull --rebase origin main
-git push origin main
+git rebase origin/main
+git push --force-with-lease --force-if-includes
 ```
 
-`git pull --rebase` replays the local commits on top of the remote `main`, so history stays
-linear and no merge commits are created. If there are no conflicts, the push just works.
-
-If the push is rejected because someone pushed in between, repeat the sequence from
-`git pull --rebase`.
+GitHub rejects the merge if the branch is behind `main`; rebase and push again.
 
 ### Conflicts
 
@@ -183,16 +206,15 @@ push, tell the user which files conflicted and how you resolved them.
 
 ### Force push
 
-Force pushing should never be needed in this flow. If it is unavoidable (for example after
-amending a commit that was already pushed), never use plain `--force`. Use the lease options
-so the push fails when the remote `main` differs from what the local checkout last saw:
+Force pushing a feature branch after a rebase is normal. Never use plain `--force`. Use the
+lease options so the push fails when the remote branch differs from what the local checkout
+last saw:
 
 ```
-git fetch origin
-git push --force-with-lease=main:origin/main --force-if-includes origin main
+git push --force-with-lease --force-if-includes
 ```
 
-`--force-with-lease` rejects the push if remote `main` moved past the local `origin/main`.
+`--force-with-lease` rejects the push if the remote branch moved past what was last fetched.
 `--force-if-includes` additionally rejects it if the remote commits were fetched but not yet
-integrated into the local branch. If the push is rejected, do not retry with `--force`:
-run `git pull --rebase origin main`, resolve conflicts, and push normally.
+integrated into the local branch. If the push is rejected, fetch, rebase, and push again.
+Force pushing `main` is impossible; the branch protection rejects it.
