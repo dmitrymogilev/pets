@@ -154,11 +154,14 @@
     const whole = Math.min(Math.floor(hours), 24 * 60);
     const step = (h) => {
       food = clamp(food - 4 * h, 0, 100);
-      energy = clamp(energy + 3 * h, 0, 100);
       mood = mood > 50 ? Math.max(50, mood - 2 * h) : Math.min(50, mood + 2 * h);
       if (food < 25) mood = clamp(mood - 3 * h, 0, 100);
       if (food < 15) health = clamp(health - 2 * h, 0, 100);
       else if (food >= 50) health = clamp(health + 2 * h, 0, 100);
+      // Rest recharges a fed pet; hunger, starvation, and illness drain it.
+      const rest = food >= 50 ? 3 : food >= 25 ? 0 : food >= 15 ? -2 : -4;
+      energy = clamp(energy + rest * h, 0, 100);
+      if (health < 50) energy = clamp(energy - 2 * h, 0, 100);
     };
     for (let i = 0; i < whole; i++) {
       step(1);

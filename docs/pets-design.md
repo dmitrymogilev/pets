@@ -79,10 +79,14 @@ with the error, and decay is baked into the state.
 Four numbers from 0 to 100: food, mood, energy, health. Decay is a pure
 function of the stored numbers, `state_at`, and the current time
 (`Pets.effectiveState`), so every reader computes the same value and no writes
-are needed. Per hour: food falls 4, energy rises 3, mood drifts toward 50 by 2
-and falls 3 more while food is under 25, health falls 2 while food is under 15
-and rises 2 while food is at least 50. The model returns absolute values; the
-client clamps them to 0 to 100 and to at most 30 points of change.
+are needed. Per hour: food falls 4, mood drifts toward 50 by 2 and falls 3 more
+while food is under 25, health falls 2 while food is under 15 and rises 2 while
+food is at least 50. Energy rises 3 while food is at least 50, holds between 25
+and 49, falls 2 while food is under 25, falls 4 while food is under 15, and
+falls 2 more while health is under 50. From full stats a neglected pet is
+exhausted after about 45 hours and at zero on everything after about 71. The
+model returns absolute values; the client clamps them to 0 to 100 and to at
+most 30 points of change.
 
 ## Prompt
 
