@@ -47,38 +47,23 @@
     document.dispatchEvent(new CustomEvent('pets-theme', { detail: key }));
   }
 
-  // Build the tab strip on the main page. Arrow keys move between tabs.
-  function tabs(container) {
+  // Build the theme switcher: a labelled <select> listing every theme.
+  function switcher(container) {
     container.replaceChildren();
+    const label = document.createElement('span');
+    label.textContent = 'Theme';
+    const select = document.createElement('select');
     THEMES.forEach((t) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.role = 'tab';
-      b.className = 'theme-tab';
-      b.dataset.key = t.key;
-      b.textContent = t.name;
-      b.addEventListener('click', () => { set(t.key); sync(); });
-      container.appendChild(b);
+      const o = document.createElement('option');
+      o.value = t.key;
+      o.textContent = t.name;
+      select.appendChild(o);
     });
-    container.addEventListener('keydown', (ev) => {
-      if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
-      const i = THEMES.findIndex((t) => t.key === get());
-      const n = (i + (ev.key === 'ArrowRight' ? 1 : THEMES.length - 1)) % THEMES.length;
-      set(THEMES[n].key); sync();
-      container.children[n].focus();
-      ev.preventDefault();
-    });
-    function sync() {
-      const cur = get();
-      Array.from(container.children).forEach((b) => {
-        const on = b.dataset.key === cur;
-        b.setAttribute('aria-selected', on ? 'true' : 'false');
-        b.tabIndex = on ? 0 : -1;
-      });
-    }
-    sync();
+    select.value = get();
+    select.addEventListener('change', () => set(select.value));
+    container.append(label, select);
   }
 
   apply(get());
-  window.PetsTheme = { THEMES, get, set, tabs };
+  window.PetsTheme = { THEMES, get, set, switcher };
 })();

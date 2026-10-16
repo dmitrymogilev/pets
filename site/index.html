@@ -14,9 +14,11 @@
     <a class="brand-name" href="/">Pets</a>
     <p class="tagline">Virtual pets for the team. Care for one, and its reaction lands in Slack, so colleagues get to know each other.</p>
   </div>
-  <a class="btn btn-primary" href="/create/">Create a pet</a>
+  <div class="top-actions">
+    <label class="theme-switch" id="theme-switch"></label>
+    <a class="btn btn-primary" href="/create/">Create a pet</a>
+  </div>
 </header>
-<nav class="themes" id="themes" role="tablist" aria-label="Look and feel"></nav>
 
 <main>
 <p id="status" class="status">Loading pets...</p>
@@ -33,7 +35,7 @@
   const errors = errorLog(document.getElementById('error-list'));
   const gallery = document.getElementById('gallery');
   const status = document.getElementById('status');
-  PetsTheme.tabs(document.getElementById('themes'));
+  PetsTheme.switcher(document.getElementById('theme-switch'));
 
   let me = null;
   try { me = await spot.me(); } catch (e) { errors.add('identity', e); }
