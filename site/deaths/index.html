@@ -13,7 +13,7 @@
   <div class="brand">
     <div class="brand-row"><a class="back" href="/">All pets</a><a class="back" href="/about/">About</a></div>
     <h1>Death list</h1>
-    <p class="tagline">Hard Code pets whose health reached zero. They do not come back. Each one has a thread; anyone can leave a word.</p>
+    <p class="tagline">Hard Core pets whose health reached zero. They do not come back. Each one has a thread; anyone can leave a word.</p>
   </div>
   <div class="top-actions"><label class="theme-switch" id="theme-switch"></label></div>
 </header>
@@ -125,7 +125,7 @@
 
   function render() {
     const items = Object.values(deaths).sort((a, b) => b.died_at.localeCompare(a.died_at));
-    status.textContent = items.length ? items.length + ' pet' + (items.length === 1 ? '' : 's') + ' died.' : 'Nobody has died. Hard Code pets end up here when their health reaches zero.';
+    status.textContent = items.length ? items.length + ' pet' + (items.length === 1 ? '' : 's') + ' died.' : 'Nobody has died. Hard Core pets end up here when their health reaches zero.';
     list.replaceChildren();
     items.forEach((d) => {
       if (!nodes[d.pet_id]) nodes[d.pet_id] = graveNode(d);
@@ -152,7 +152,7 @@
       db.state.list({ limit: 200 }),
     ]);
     deathDocs.forEach((d) => { deaths[d.data.pet_id] = strip(d); });
-    // Deaths nobody has recorded yet: a Hard Code pet whose health reached
+    // Deaths nobody has recorded yet: a Hard Core pet whose health reached
     // zero while no page was open. This page records them so the list is
     // complete on its own.
     const states = {};

@@ -51,7 +51,7 @@
   const deaths = {}; // pet id -> death record
   const recording = new Set();
 
-  // A Hard Code pet whose health reached zero leaves the gallery for the
+  // A Hard Core pet whose health reached zero leaves the gallery for the
   // death list. The first viewer to see it writes the death record.
   function dead(pet, eff) {
     if (deaths[pet.id]) return true;
@@ -83,7 +83,7 @@
       const children = [
         el('a', { class: 'card-avatar', href: link, 'aria-label': 'Open ' + pet.name }, [avatarNode(pet, 112)]),
         el('h2', { class: 'card-name' }, [el('a', { href: link, text: pet.name })]),
-        el('p', { class: 'card-kind', text: kind + ', ' + (age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's') + ' old') + (pet.hardcore ? ' · Hard Code' : '') }),
+        el('p', { class: 'card-kind', text: kind + ', ' + (age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's') + ' old') + (pet.hardcore ? ' · Hard Core' : '') }),
       ];
       if (eff) {
         children.push(el('ul', { class: 'chips', 'aria-label': 'State' }, [

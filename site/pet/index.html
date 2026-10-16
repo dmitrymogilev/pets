@@ -147,7 +147,7 @@
     $('description').textContent = pet.description;
     const age = death ? death.age_days : P.ageDays(pet.created_at);
     $('age').textContent = (age === 0 ? 'hatched today' : age + ' day' + (age === 1 ? '' : 's')) + (death ? ', at death' : '');
-    $('mode').textContent = pet.hardcore ? 'Hard Code, can die' : 'normal';
+    $('mode').textContent = pet.hardcore ? 'Hard Core, can die' : 'normal';
     $('owner').textContent = pet.owner;
     $('care').replaceChildren(P.careNode(pet));
     $('channel').textContent = pet.channel;
@@ -178,7 +178,7 @@
     if (gone) renderDead(eff);
   }
 
-  // A dead Hard Code pet: the room stays readable, nothing can be sent, and
+  // A dead Hard Core pet: the room stays readable, nothing can be sent, and
   // the thread lives on the death list. The first viewer writes the record;
   // the page switches over as soon as the decay crosses zero.
   let recording = false;
@@ -193,7 +193,7 @@
     $('talk-title').textContent = pet.name + ' has died';
     $('dead-text').textContent = pet.name + ' died on ' + when.toLocaleString() + ', ' +
       (death && death.hungry_hours ? 'after going hungry for ' + P.humanDuration(death.hungry_hours) + '. ' : '') +
-      'Hard Code pets do not come back.';
+      'Hard Core pets do not come back.';
     $('dead-link').href = P.deathsUrl(petId);
     $('dead').hidden = false;
     $('interact').hidden = true;
