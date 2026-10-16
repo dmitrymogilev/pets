@@ -5,6 +5,93 @@
 <title>Pets</title>
 </head>
 <body>
-<h1>Hello, world! 😊</h1>
+<h1>Pets</h1>
+<p>Virtual pets for the team. Care for a pet, and its reaction goes to Slack so colleagues get to know each other.</p>
+<p><a href="/create/">Create a pet</a></p>
+<p id="status">Loading pets...</p>
+<div id="errors" hidden><h2>Errors</h2><ul id="error-list"></ul></div>
+<div id="gallery"></div>
+
+<script src="/spot.js"></script>
+<script src="/pets.js"></script>
+<script>
+(async function () {
+  const { el, db, strip, effectiveState, label, ageDays, careText, avatarNode, errorLog, runDigests, hoursAgo, humanDuration } = Pets;
+  const errors = errorLog(document.getElementById('error-list'));
+  const gallery = document.getElementById('gallery');
+  const status = document.getElementById('status');
+
+  let me = null;
+  try { me = await spot.me(); } catch (e) { errors.add('identity', e); }
+
+  const pets = {};
+  const states = {};
+
+  function render() {
+    gallery.replaceChildren();
+    const list = Object.values(pets).filter((p) => !p.dismissed_at)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    status.textContent = list.length ? list.length + ' pet' + (list.length === 1 ? '' : 's') : 'No pets yet. Create the first one!';
+    const now = Date.now();
+    list.forEach((pet) => {
+      const st = states[pet.id];
+      const eff = st ? effectiveState(st, now) : null;
+      const card = el('div', { style: 'display:inline-block;vertical-align:top;width:220px;margin:8px;padding:8px;border:1px solid #888' }, [
+        el('div', {}, [avatarNode(pet, 96)]),
+        el('h3', {}, [el('a', { href: '/pet/?id=' + encodeURIComponent(pet.id), text: pet.name })]),
+        el('div', { text: (pet.kind === 'custom' ? 'Custom' : Pets.templateByKey(pet.kind).name) + ' · ' + ageDays(pet.created_at, now) + ' days old' }),
+        el('div', { text: 'Owner: ' + pet.owner }),
+        el('div', { text: 'Care: ' + careText(pet) }),
+        el('div', { text: eff ? 'Mood: ' + (eff.mood_word || label('mood', eff.mood)) + ', ' + label('food', eff.food) + ', ' + label('health', eff.health) : 'State: unknown' }),
+        el('div', { text: eff ? 'Last visit: ' + (eff.last_interaction_at ? humanDuration(hoursAgo(eff.last_interaction_at)) + ' ago' : 'never') : '' }),
+        el('p', { text: pet.description }),
+      ]);
+      gallery.appendChild(card);
+    });
+  }
+
+  try {
+    const [petDocs, stateDocs] = await Promise.all([
+      db.pets.list({ limit: 200 }),
+      db.state.list({ limit: 200 }),
+    ]);
+    petDocs.forEach((d) => { pets[d.id] = strip(d); });
+    stateDocs.forEach((d) => { states[d.data.pet_id] = strip(d); });
+    render();
+  } catch (e) {
+    status.textContent = 'Could not load pets.';
+    errors.add('database', e);
+    return;
+  }
+
+  // Live: new pets, edits, dismissals, and state changes from any visitor.
+  db.pets.subscribe({
+    onCreate: (d) => { pets[d.id] = strip(d); render(); },
+    onUpdate: (d) => { pets[d.id] = strip(d); render(); },
+    onDelete: (id) => { delete pets[id]; render(); },
+    onError: (e) => errors.add('realtime pets', e),
+  });
+  db.state.subscribe({
+    onCreate: (d) => { states[d.data.pet_id] = strip(d); render(); },
+    onUpdate: (d) => { states[d.data.pet_id] = strip(d); render(); },
+    onError: (e) => errors.add('realtime state', e),
+  });
+  // Decay is time-based; refresh the labels once a minute.
+  setInterval(render, 60 * 1000);
+
+  // Daily check-in per channel for pets that need attention. Any visit may
+  // trigger it; the digest documents make sure only one post goes out.
+  if (me) {
+    runDigests(Object.values(pets), states, me, (ev) => {
+      if (ev.ok) {
+        const note = el('p', { text: 'Posted a daily check-in for ' + ev.count + ' pet' + (ev.count === 1 ? '' : 's') + ' to ' + ev.channel + '.' });
+        status.after(note);
+      } else {
+        errors.add('digest ' + ev.channel, ev.error);
+      }
+    });
+  }
+})();
+</script>
 </body>
 </html>

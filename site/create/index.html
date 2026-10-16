@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Create a pet</title>
+</head>
+<body>
+<h1>Create a pet</h1>
+<p><a href="/">Back to all pets</a></p>
+<div id="errors" hidden><h2>Errors</h2><ul id="error-list"></ul></div>
+
+<form id="form">
+  <p><label>Name (max 30)<br><input id="name" maxlength="30" required size="40"></label></p>
+
+  <p><label>Pet<br><select id="kind" required></select></label></p>
+
+  <fieldset id="custom-box" hidden>
+    <legend>Custom avatar</legend>
+    <p><label>Describe the picture (max 200)<br><textarea id="image-prompt" maxlength="200" rows="3" cols="60"></textarea></label></p>
+    <p><button type="button" id="generate">Generate</button> <span id="image-status"></span></p>
+    <p><img id="avatar-preview" alt="" width="256" height="256" hidden></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Who can care</legend>
+    <p>Everyone can see every pet. This decides who may interact with it.</p>
+    <label><input type="radio" name="care" value="owner" checked> Individual: only I care</label><br>
+    <label><input type="radio" name="care" value="everyone"> Public: everyone cares</label><br>
+    <label><input type="radio" name="care" value="group"> Group: I and these people care</label><br>
+    <p id="carers-box" hidden><label>Emails, one per line or comma separated<br><textarea id="carers" rows="3" cols="60"></textarea></label></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Slack channel for reactions</legend>
+    <label><input type="radio" name="channel-mode" value="default" checked> Default channel <code id="default-channel"></code></label><br>
+    <label><input type="radio" name="channel-mode" value="custom"> Custom channel</label>
+    <p id="channel-box" hidden>
+      <label>Channel <input id="channel" placeholder="#team-room" size="30"></label><br>
+      <small>Any channel works, including private ones, but the Spot app must be added to it first.</small>
+    </p>
+  </fieldset>
+
+  <p><label>Description, visible to everyone (max 200)<br><textarea id="description" maxlength="200" rows="3" cols="60" required></textarea></label></p>
+  <p><label>Soul: personality and behavior, hidden from the UI for others (max 600)<br><textarea id="soul" maxlength="600" rows="6" cols="60" required></textarea></label>
+  <br><small>Hidden from the pages, not a secret: everything in this game lives in the browser.</small></p>
+
+  <p><button type="submit" id="create">Create</button> <span id="create-status"></span></p>
+</form>
+
+<script src="/spot.js"></script>
+<script src="/pets.js"></script>
+<script>
+(async function () {
+  const { TEMPLATES, DEFAULT_CHANNEL, LIMITS, errText, lower, createPet, uploadAvatar, errorLog } = Pets;
+  const errors = errorLog(document.getElementById('error-list'));
+  const $ = (id) => document.getElementById(id);
+
+  $('default-channel').textContent = DEFAULT_CHANNEL;
+  TEMPLATES.forEach((t) => $('kind').appendChild(Pets.el('option', { value: t.key, text: t.emoji + ' ' + t.name })));
+  $('kind').value = 'cat';
+
+  let me = null;
+  try { me = await spot.me(); } catch (e) { errors.add('identity', e); }
+
+  let image = null; // { b64, mime_type } from the last generation
+
+  $('kind').addEventListener('change', () => {
+    $('custom-box').hidden = $('kind').value !== 'custom';
+  });
+  document.querySelectorAll('input[name=care]').forEach((r) => r.addEventListener('change', () => {
+    $('carers-box').hidden = document.querySelector('input[name=care]:checked').value !== 'group';
+  }));
+  document.querySelectorAll('input[name=channel-mode]').forEach((r) => r.addEventListener('change', () => {
+    $('channel-box').hidden = document.querySelector('input[name=channel-mode]:checked').value !== 'custom';
+  }));
+
+  $('generate').addEventListener('click', async () => {
+    const prompt = $('image-prompt').value.trim();
+    if (!prompt) { $('image-status').textContent = 'Describe the picture first.'; return; }
+    $('generate').disabled = true;
+    $('image-status').textContent = 'Generating...';
+    try {
+      const res = await spot.ai.image('A cute pet avatar, centered, simple background: ' + prompt);
+      const first = (res.images || [])[0];
+      if (!first) throw new Error('no images in response');
+      image = first;
+      $('avatar-preview').src = first.data_url || ('data:' + (first.mime_type || 'image/png') + ';base64,' + first.b64);
+      $('avatar-preview').hidden = false;
+      $('image-status').textContent = 'Done. Not happy? Generate again.';
+      $('generate').textContent = 'Regenerate';
+    } catch (e) {
+      $('image-status').textContent = errText(e);
+      errors.add('AI image', e);
+    } finally {
+      $('generate').disabled = false;
+    }
+  });
+
+  $('form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const status = $('create-status');
+    const fields = {
+      name: $('name').value.trim(),
+      kind: $('kind').value,
+      description: $('description').value.trim(),
+      soul: $('soul').value.trim(),
+      care: document.querySelector('input[name=care]:checked').value,
+      carers: [],
+      channel: DEFAULT_CHANNEL,
+    };
+    if (!fields.name || !fields.description || !fields.soul) { status.textContent = 'All fields are required.'; return; }
+    if (fields.name.length > LIMITS.name || fields.description.length > LIMITS.description || fields.soul.length > LIMITS.soul) {
+      status.textContent = 'A field is too long.'; return;
+    }
+    if (fields.care === 'group') {
+      fields.carers = $('carers').value.split(/[\s,;]+/).map(lower).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+      if (!fields.carers.length) { status.textContent = 'Add at least one email to the group.'; return; }
+      if (fields.carers.some((c) => !/^[^@\s]+@[^@\s]+$/.test(c))) { status.textContent = 'One of the emails does not look right.'; return; }
+    }
+    if (document.querySelector('input[name=channel-mode]:checked').value === 'custom') {
+      let ch = $('channel').value.trim();
+      if (!ch) { status.textContent = 'Type a channel or pick the default.'; return; }
+      if (!/^[#CU]/.test(ch)) ch = '#' + ch;
+      fields.channel = ch;
+    }
+    if (fields.kind === 'custom' && !image) { status.textContent = 'Generate an avatar first.'; return; }
+    if (!me) { status.textContent = 'No identity, cannot create.'; return; }
+
+    $('create').disabled = true;
+    try {
+      if (fields.kind === 'custom') {
+        status.textContent = 'Uploading avatar...';
+        try {
+          fields.avatar_url = await uploadAvatar(image, 'avatar-' + Date.now() + '.png');
+        } catch (e) {
+          errors.add('file upload', e);
+          status.textContent = 'Avatar upload failed: ' + errText(e);
+          return;
+        }
+      }
+      status.textContent = 'Creating...';
+      const { pet, slackError } = await createPet(fields, me);
+      const link = '/pet/?id=' + encodeURIComponent(pet.id);
+      if (slackError) {
+        errors.add('Slack hatch message to ' + pet.channel, slackError);
+        status.replaceChildren(
+          'Pet created, but the Slack post to ' + pet.channel + ' failed. Make sure the Spot app is in the channel, or change the channel in the pet room. ',
+          Pets.el('a', { href: link, text: 'Open the pet room' }),
+        );
+      } else {
+        status.textContent = 'Created! Opening the room...';
+        location.href = link;
+      }
+    } catch (e) {
+      errors.add('database', e);
+      status.textContent = 'Create failed: ' + errText(e);
+    } finally {
+      $('create').disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

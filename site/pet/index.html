@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pet room</title>
+</head>
+<body>
+<p><a href="/">Back to all pets</a></p>
+<p id="status">Loading...</p>
+<div id="errors" hidden><h2>Errors</h2><ul id="error-list"></ul></div>
+
+<div id="room" hidden>
+  <div id="avatar"></div>
+  <h1 id="name"></h1>
+  <p id="description"></p>
+  <ul>
+    <li>Age: <span id="age"></span></li>
+    <li>Owner: <span id="owner"></span></li>
+    <li>Who can care: <span id="care"></span></li>
+    <li>Slack channel: <code id="channel"></code></li>
+    <li>Here now: <span id="presence">just you</span></li>
+  </ul>
+
+  <h2>Current state</h2>
+  <ul id="state"></ul>
+  <p id="status-line"></p>
+
+  <h2>Interact</h2>
+  <p id="no-care" hidden>Only the listed carers can interact with this pet. You can still watch.</p>
+  <form id="interact" hidden>
+    <textarea id="text" maxlength="200" rows="3" cols="60" placeholder="Feed it, play with it, tell it about your day..." required></textarea><br>
+    <small><span id="count">0</span>/200. The pet's memory of this and its reaction will be posted to <code class="channel-name"></code>.</small><br>
+    <button type="submit" id="send">Send</button> <span id="progress"></span>
+  </form>
+  <p id="typing"></p>
+  <p id="queue"></p>
+  <p id="notice"></p>
+
+  <h2>Reactions</h2>
+  <ul id="reactions"></ul>
+
+  <div id="owner-tools" hidden>
+    <h2>Owner tools</h2>
+    <form id="edit">
+      <fieldset>
+        <legend>Who can care</legend>
+        <label><input type="radio" name="care" value="owner"> Individual: only I care</label><br>
+        <label><input type="radio" name="care" value="everyone"> Public: everyone cares</label><br>
+        <label><input type="radio" name="care" value="group"> Group: I and these people care</label><br>
+        <p id="carers-box" hidden><label>Emails, one per line or comma separated<br><textarea id="carers" rows="3" cols="60"></textarea></label></p>
+      </fieldset>
+      <p><label>Slack channel <input id="edit-channel" size="30"></label><br>
+      <small>The Spot app must be a member of the channel.</small></p>
+      <p><label>Description (max 200)<br><textarea id="edit-description" maxlength="200" rows="3" cols="60" required></textarea></label></p>
+      <p><label>Soul (max 600)<br><textarea id="edit-soul" maxlength="600" rows="6" cols="60" required></textarea></label></p>
+      <p><button type="submit">Save</button> <span id="edit-status"></span></p>
+    </form>
+    <p><button type="button" id="dismiss">Dismiss this pet</button> <span id="dismiss-status"></span></p>
+  </div>
+</div>
+
+<script src="/spot.js"></script>
+<script src="/pets.js"></script>
+<script>
+(async function () {
+  const P = Pets;
+  const { el, db, strip, effectiveState, label, errText, lower } = P;
+  const $ = (id) => document.getElementById(id);
+  const errors = P.errorLog($('error-list'));
+  const petId = new URLSearchParams(location.search).get('id');
+  if (!petId) { $('status').textContent = 'No pet id in the URL.'; return; }
+
+  let me = null;
+  try { me = await spot.me(); } catch (e) { errors.add('identity', e); }
+
+  let pet, state;
+  try {
+    const bundle = await P.loadPetBundle(petId);
+    pet = bundle.pet; state = bundle.state;
+  } catch (e) {
+    $('status').textContent = 'Could not load this pet.';
+    errors.add('database', e);
+    return;
+  }
+  if (pet.dismissed_at) { $('status').textContent = pet.name + ' was dismissed on ' + new Date(pet.dismissed_at).toLocaleString() + '.'; return; }
+  $('status').hidden = true;
+  $('room').hidden = false;
+  document.title = pet.name;
+
+  const owner = me && P.isOwner(pet, me);
+  const carer = me && P.canCare(pet, me);
+
+  // ------------------------------------------------------------ rendering
+  function renderPet() {
+    $('avatar').replaceChildren(P.avatarNode(pet, 160));
+    $('name').textContent = pet.name + ' ' + (pet.kind === 'custom' ? '🎨' : pet.emoji);
+    $('description').textContent = pet.description;
+    $('age').textContent = P.ageDays(pet.created_at) + ' days';
+    $('owner').textContent = pet.owner;
+    $('care').textContent = P.careText(pet);
+    $('channel').textContent = pet.channel;
+    document.querySelectorAll('.channel-name').forEach((n) => { n.textContent = pet.channel; });
+  }
+
+  function renderState() {
+    const eff = effectiveState(state);
+    const row = (field, title) => el('li', { text: title + ': ' + label(field, eff[field]) + ' (' + eff[field] + ')' });
+    $('state').replaceChildren(
+      el('li', { text: 'Mood: ' + (eff.mood_word || label('mood', eff.mood)) + ' (' + eff.mood + ')' }),
+      row('food', 'Food'), row('energy', 'Energy'), row('health', 'Health'),
+      el('li', { text: 'Last visit: ' + (eff.last_interaction_at ? P.humanDuration(P.hoursAgo(eff.last_interaction_at)) + ' ago' : 'never') }),
+    );
+    $('status-line').textContent = eff.status_line ? '“' + eff.status_line + '”' : '';
+  }
+
+  const inters = {}; // id -> interaction (stripped)
+  const ownIds = new Set();
+
+  function renderReactions() {
+    const list = Object.values(inters).sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 30);
+    $('reactions').replaceChildren();
+    list.forEach((i) => {
+      const when = new Date(i.created_at).toLocaleString();
+      const li = el('li');
+      li.appendChild(el('div', { text: when + ' · ' + i.actor_name + ': ' + i.text }));
+      if (i.status === 'done') {
+        li.appendChild(el('div', { text: '🗒 ' + i.memory }));
+        li.appendChild(el('div', { text: '💬 ' + i.reaction }));
+        if (i.state_after) li.appendChild(el('div', { text: 'mood: ' + i.state_after.mood_word + ' · food ' + i.state_after.food + ' · mood ' + i.state_after.mood + ' · energy ' + i.state_after.energy + ' · health ' + i.state_after.health }));
+        if (i.slack_error) li.appendChild(el('div', { text: '⚠ Slack: ' + i.slack_error }));
+        else if (i.slack_ts) li.appendChild(el('div', { text: 'Posted to ' + pet.channel }));
+      } else if (i.status === 'failed') {
+        li.appendChild(el('div', { text: '⚠ The pet could not react. AI: ' + (i.ai_error || 'unknown error') }));
+      } else {
+        li.appendChild(el('div', { text: '⏳ ' + (i.status === 'processing' ? 'the pet is reacting...' : 'waiting in line' + (i.ticket ? ' (ticket ' + i.ticket + ')' : '')) }));
+      }
+      $('reactions').appendChild(li);
+    });
+    const pending = list.filter((i) => i.status === 'queued' || i.status === 'processing');
+    $('queue').textContent = pending.length ? pending.length + ' interaction' + (pending.length === 1 ? '' : 's') + ' in line: ' + pending.map((i) => i.actor_name).join(', ') : '';
+  }
+
+  renderPet(); renderState();
+  setInterval(renderState, 60 * 1000);
+
+  try {
+    const docs = await db.interactions.list({ where: { pet_id: petId }, limit: 30 });
+    docs.forEach((d) => { inters[d.id] = strip(d); });
+    renderReactions();
+  } catch (e) { errors.add('database', e); }
+
+  // ---------------------------------------------------------------- live
+  db.interactions.subscribe({
+    onCreate: (d) => { if (d.data.pet_id === petId) { inters[d.id] = strip(d); renderReactions(); scheduleTick(500); } },
+    onUpdate: (d) => { if (d.data.pet_id === petId) { inters[d.id] = strip(d); renderReactions(); scheduleTick(500); } },
+    onDelete: (id) => { delete inters[id]; renderReactions(); },
+    onError: (e) => errors.add('realtime interactions', e),
+  });
+  db.state.subscribe({
+    onUpdate: (d) => { if (d.data.pet_id === petId) { state = strip(d); renderState(); scheduleTick(500); } },
+    onError: (e) => errors.add('realtime state', e),
+  });
+  db.pets.subscribe({
+    onUpdate: (d) => {
+      if (d.id !== petId) return;
+      Object.assign(pet, strip(d));
+      // Our own dismissal is handled by the dismiss button, which still has
+      // to post the farewell and show its outcome.
+      if (pet.dismissed_at && !dismissing) { location.reload(); return; }
+      renderPet();
+    },
+    onDelete: (id) => { if (id === petId) location.reload(); },
+    onError: (e) => errors.add('realtime pets', e),
+  });
+
+  const room = spot.realtime.room('pet-' + petId);
+  room.onError((e) => errors.add('realtime room', e));
+  if (me) room.setPresence({ name: me.name || me.email });
+  room.onPresence((users) => {
+    const names = (users || []).map((u) => (u && u.data && u.data.name) || (u && u.name) || (u && u.email) || 'someone')
+      .filter((v, i, a) => a.indexOf(v) === i);
+    $('presence').textContent = names.length ? names.join(', ') : 'just you';
+  });
+  let typingTimer;
+  room.on('typing', (msg) => {
+    if (me && msg.from && lower(msg.from.email) === lower(me.email)) return;
+    $('typing').textContent = ((msg.data && msg.data.name) || 'Someone') + ' is typing...';
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => { $('typing').textContent = ''; }, 3000);
+  });
+
+  // ------------------------------------------------------------- queue
+  // One engine per tab: runs often while anything is pending, rarely
+  // otherwise, and takes over stale tickets left by closed tabs.
+  let ticking = false, tickStarted = 0, tickTimer;
+  function scheduleTick(ms) {
+    clearTimeout(tickTimer);
+    tickTimer = setTimeout(tick, ms);
+  }
+  async function tick() {
+    // Watchdog: a request that never settles would otherwise leave the
+    // engine busy forever. After two minutes the next tick goes ahead and the
+    // stale-ticket rules in queueTick recover whatever was left behind.
+    if (ticking && Date.now() - tickStarted > 2 * P.STALE_MS) {
+      errors.add('queue', 'a previous step did not finish in time, continuing');
+      ticking = false;
+    }
+    if (ticking || !me) { scheduleTick(2000); return; }
+    ticking = true;
+    tickStarted = Date.now();
+    let next = 30 * 1000;
+    try {
+      const res = await P.queueTick(pet, me, { ownIds, report: (step) => { $('progress').textContent = step + '...'; } });
+      if (res.action === 'processed') {
+        if (res.takeover) $('notice').textContent = new Date().toLocaleTimeString() + ' Finished a reaction left behind by a closed tab.';
+        if (res.inter.ai_error) errors.add('AI', res.inter.ai_error);
+        if (res.inter.slack_error) errors.add('Slack ' + pet.channel, res.inter.slack_error);
+        if (ownIds.has(res.inter.id)) { ownIds.delete(res.inter.id); $('progress').textContent = ''; $('send').disabled = false; }
+        next = 500;
+      } else if (res.action === 'waiting' || res.action === 'skipped') {
+        next = 2000;
+      } else if (ownIds.size) {
+        next = 2000;
+      }
+    } catch (e) {
+      errors.add('queue', e);
+      $('progress').textContent = '';
+      $('send').disabled = false;
+      next = 5000;
+    } finally {
+      ticking = false;
+      scheduleTick(next);
+    }
+  }
+  scheduleTick(1000);
+
+  // ------------------------------------------------------------- interact
+  if (carer) $('interact').hidden = false; else $('no-care').hidden = false;
+  let typingSent = false;
+  $('text').addEventListener('input', () => {
+    $('count').textContent = $('text').value.length;
+    if (me && !typingSent) { typingSent = true; room.send('typing', { name: me.name || me.email }); setTimeout(() => { typingSent = false; }, 2000); }
+  });
+  $('interact').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const text = $('text').value.trim();
+    if (!text || text.length > P.LIMITS.text) return;
+    $('send').disabled = true;
+    $('progress').textContent = 'queuing...';
+    try {
+      const inter = await P.enqueue(pet, text, me);
+      ownIds.add(inter.id);
+      inters[inter.id] = strip(inter);
+      $('text').value = ''; $('count').textContent = '0';
+      renderReactions();
+      $('progress').textContent = 'in line, ticket ' + inter.data.ticket + '...';
+      scheduleTick(0);
+    } catch (e) {
+      errors.add('database', e);
+      $('progress').textContent = errText(e);
+      $('send').disabled = false;
+    }
+  });
+
+  // ---------------------------------------------------------------- owner
+  let dismissing = false;
+  if (owner) {
+    $('owner-tools').hidden = false;
+    document.querySelector('input[name=care][value=' + pet.care + ']').checked = true;
+    $('carers-box').hidden = pet.care !== 'group';
+    $('carers').value = (pet.carers || []).join('\n');
+    $('edit-channel').value = pet.channel;
+    $('edit-description').value = pet.description;
+    $('edit-soul').value = pet.soul;
+    document.querySelectorAll('input[name=care]').forEach((r) => r.addEventListener('change', () => {
+      $('carers-box').hidden = document.querySelector('input[name=care]:checked').value !== 'group';
+    }));
+    $('edit').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const st = $('edit-status');
+      const care = document.querySelector('input[name=care]:checked').value;
+      let carers = [];
+      if (care === 'group') {
+        carers = $('carers').value.split(/[\s,;]+/).map(lower).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+        if (!carers.length) { st.textContent = 'Add at least one email to the group.'; return; }
+      }
+      let channel = $('edit-channel').value.trim() || P.DEFAULT_CHANNEL;
+      if (!/^[#CU]/.test(channel)) channel = '#' + channel;
+      const description = $('edit-description').value.trim();
+      const soul = $('edit-soul').value.trim();
+      if (!description || !soul) { st.textContent = 'Description and soul are required.'; return; }
+      const data = { name: pet.name, kind: pet.kind, emoji: pet.emoji, avatar_url: pet.avatar_url || null,
+        description, soul, care, carers, channel, dismissed_at: null };
+      st.textContent = 'Saving...';
+      try {
+        const d = await db.pets.updateMine(petId, data);
+        Object.assign(pet, strip(d));
+        renderPet();
+        st.textContent = 'Saved.';
+      } catch (e) {
+        errors.add('database', e);
+        st.textContent = errText(e);
+      }
+    });
+    $('dismiss').addEventListener('click', async () => {
+      if (!confirm('Dismiss ' + pet.name + '? The pet disappears from the gallery and a farewell is posted to ' + pet.channel + '.')) return;
+      const st = $('dismiss-status');
+      dismissing = true;
+      st.textContent = 'Dismissing...';
+      const data = { name: pet.name, kind: pet.kind, emoji: pet.emoji, avatar_url: pet.avatar_url || null,
+        description: pet.description, soul: pet.soul, care: pet.care, carers: pet.carers || [], channel: pet.channel,
+        dismissed_at: new Date().toISOString() };
+      try {
+        await db.pets.updateMine(petId, data);
+      } catch (e) {
+        dismissing = false;
+        errors.add('database', e); st.textContent = errText(e); return;
+      }
+      try {
+        await P.sendSlack(pet.channel, P.farewellText(pet, me.name || me.email));
+      } catch (e) {
+        errors.add('Slack ' + pet.channel, e);
+        st.textContent = 'Dismissed, but the farewell post to ' + pet.channel + ' failed: ' + errText(e) + '. Use the link at the top to go back.';
+        return;
+      }
+      location.href = '/';
+    });
+  }
+})();
+</script>
+</body>
+</html>
