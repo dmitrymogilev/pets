@@ -3,17 +3,18 @@
 // CSS has local fallbacks for every family.
 (function () {
   'use strict';
+  // Keep this list alphabetical by name; the switcher shows it in this order.
   const THEMES = [
-    { key: 'pocket', name: 'Pocket', fonts: 'VT323' },
+    { key: 'aquarium', name: 'Aquarium', fonts: 'Baloo+2:wght@500;700&family=Nunito:wght@400;600;700' },
+    { key: 'blueprint', name: 'Blueprint', fonts: 'Saira+Condensed:wght@500;600&family=Saira:wght@400;500;600' },
+    { key: 'comic', name: 'Comic', fonts: 'Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,400' },
     { key: 'kennel', name: 'Kennel card', fonts: 'Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite' },
     { key: 'nightlight', name: 'Nightlight', fonts: 'Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,100;1,9..144,300..700,100&family=Instrument+Sans:wght@400;500;600' },
-    { key: 'sticker', name: 'Sticker', fonts: 'Fredoka:wght@400..700' },
-    { key: 'comic', name: 'Comic', fonts: 'Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,400' },
-    { key: 'aquarium', name: 'Aquarium', fonts: 'Baloo+2:wght@500;700&family=Nunito:wght@400;600;700' },
     { key: 'picnic', name: 'Picnic', fonts: 'Lilita+One&family=Mulish:wght@400;600;700' },
-    { key: 'blueprint', name: 'Blueprint', fonts: 'Saira+Condensed:wght@500;600&family=Saira:wght@400;500;600' },
-    { key: 'zoo', name: 'Zoo signs', fonts: 'Archivo+Black&family=Archivo:wght@400;500;600' },
+    { key: 'pocket', name: 'Pocket', fonts: 'VT323' },
+    { key: 'sticker', name: 'Sticker', fonts: 'Fredoka:wght@400..700' },
     { key: 'theater', name: 'Theater', fonts: 'Limelight&family=Lora:ital,wght@0,400..700;1,400' },
+    { key: 'zoo', name: 'Zoo signs', fonts: 'Archivo+Black&family=Archivo:wght@400;500;600' },
   ];
   const KEY = 'pets-theme';
   const DEFAULT = 'aquarium';
