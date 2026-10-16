@@ -16,7 +16,7 @@
   'use strict';
 
   const DEFAULT_CHANNEL = '#pets-private';
-  const LIMITS = { name: 30, description: 400, soul: 600, text: 400, imagePrompt: 400 };
+  const LIMITS = { name: 30, description: 400, soul: 600, text: 400, imagePrompt: 600 };
   const STALE_MS = 90 * 1000;
   const HOUR = 3600 * 1000;
   const DAY = 24 * HOUR;
