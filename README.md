@@ -58,7 +58,8 @@ Production is deployed from a clean `main` by a maintainer with `./scripts/deplo
 
 ## Contribute
 
-Issues and pull requests are welcome. The pets live in the `#pets` Slack channel at T1A.
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the flow.
+The pets live in the `#pets` Slack channel at T1A.
 
 ## Credits
 
