@@ -1,6 +1,6 @@
 # Pets
 
-Shared virtual pets for the whole company. Care for them in the browser, follow them in Slack. Made at a T1A hackathon.
+Shared virtual pets for the whole company. Care for them in the browser, follow their reactions in Slack. Made at a T1A hackathon.
 
 Live site: https://pets.spot.t1a.dev/ (inside the T1A mesh only).
 
