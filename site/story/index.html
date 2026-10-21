@@ -20,7 +20,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 /* caption band, styled like the label band of a vase */
 .band{position:absolute;left:0;right:0;top:78%;height:16.4%;background:#0d0806;border-top:1px solid #4a2a14;border-bottom:1px solid #4a2a14;
   display:flex;align-items:center;justify-content:center;padding:0 9%;text-align:center}
-.cap{position:absolute;left:9%;right:9%;top:50%;transform:translateY(-50%);font-size:2.05cqw;line-height:1.45;color:var(--cream);opacity:0;transition:opacity .6s;
+.cap{position:absolute;left:9%;right:9%;top:50%;transform:translateY(-50%);font-size:2.05cqw;line-height:1.45;color:var(--cream);opacity:0;transition:opacity .3s;
   text-shadow:0 1px 0 #000}
 .cap.show{opacity:1}
 .cap .red{display:inline-block;border:1px solid var(--clay);padding:0 .35em;color:var(--light);letter-spacing:.08em;line-height:1.2;margin:0 .1em}
@@ -78,7 +78,7 @@ svg text{font-family:var(--serif)}
 .plaque .s{fill:var(--light);font-size:22px;letter-spacing:.35em;text-anchor:middle}
 
 /* ---- scenes ---- */
-.scene{opacity:0;transition:opacity .7s}
+.scene{opacity:0;transition:opacity .45s}
 .scene.active{opacity:1}
 .scene:not(.on){visibility:hidden}
 .stage.paused *{animation-play-state:paused}
@@ -494,43 +494,39 @@ function introScene(){
     ${olive(230,530,.9,-8)}<g transform="translate(1370,530) scale(-1,1)">${olive(0,0,.9,-8)}</g>`;
 }
 
-// Full decoded ElevenLabs introduction; the original story begins after it ends.
-const introDuration=37.14612244897959;
+// Long silent waits shortened; natural speech pauses and scene breaks retained.
+const introDuration=46.759125;
 const R=s=>`<span class="red">${s}</span>`;
 const scenes=[
-  {id:'intro',dur:introDuration,build:introScene,caps:[]},
-  {id:'s1',dur:3,build:titleScene,caps:[
-    [0.6,'Based on the legend of Odysseus.']
+  {id:'intro',dur:introDuration,motionDuration:50.67755102,build:introScene,caps:[]},
+  {id:'s2',dur:7.396077173,motionDuration:8,build:()=>shoreScene(false),caps:[
+    [0.215532956,'Before leaving Ithaca, Odysseus turned to the gods on Olympus with a request: to keep safe a treasure dear to his heart.']
   ]},
-  {id:'s2',dur:8,build:()=>shoreScene(false),caps:[
-    [0.4,'Before leaving Ithaca, Odysseus turned to the gods on Olympus with a request: to keep safe a treasure dear to his heart.']
+  {id:'s3',dur:15.933446712,motionDuration:17,build:olympusScene,caps:[
+    [0.420045351,`Zeus heard Odysseus's prayers and created a special mission among the gods. The project was named "${R('[REDACTED]')}".`],
+    [7.346439909,"The gods kept the mission secret, fearing Odysseus's many enemies who had stayed behind on Ithaca,"],
+    [13.046439909,'afraid they would destroy the treasure entrusted to them.']
   ]},
-  {id:'s3',dur:17,build:olympusScene,caps:[
-    [0.4,`Zeus heard Odysseus's prayers and created a special mission among the gods. The project was named "${R('[REDACTED]')}".`],
-    [8.4,"The gods kept the mission secret, fearing Odysseus's many enemies who had stayed behind on Ithaca,"],
-    [14.1,'afraid they would destroy the treasure entrusted to them.']
+  {id:'s4',dur:6.851609977,motionDuration:8,build:yearsScene,tick:yearsTick,caps:[
+    [0,"For twenty years, the mission's task was to protect Odysseus's treasure until the moment he returned home to Ithaca."]
   ]},
-  {id:'s4',dur:8,build:yearsScene,tick:yearsTick,caps:[
-    [0.4,"For twenty years, the mission's task was to protect Odysseus's treasure until the moment he returned home to Ithaca."]
+  {id:'s5',dur:5.572721088,motionDuration:7,build:()=>shoreScene(true),caps:[
+    [0,'The gods succeeded, and when Odysseus returned, he found his treasure safe and sound.']
   ]},
-  {id:'s5',dur:7,build:()=>shoreScene(true),caps:[
-    [0.4,'The gods succeeded, and when Odysseus returned, he found his treasure safe and sound.']
+  {id:'s8',dur:4.847641723,motionDuration:8.791127903,build:reunionScene,caps:[[3.529115646,'"Argus!"']]},
+  {id:'s6',dur:21.984036281,motionDuration:25,build:earthScene,caps:[
+    [0,"Seeing the joy in Odysseus's eyes, and realizing how much the warmth and devotion of a small creature mean to people,"],
+    [7.094875283,'Zeus decided not to close the mission but to bring it down to earth, to humankind.'],
+    [11.964263039,`He entrusted the team "${R('[REDACTED]')}" with creating a product that would strengthen bonds and improve communication between people`],
+    [18.364263039,'through caring for their beloved pets and the happy time spent together.']
   ]},
-  {id:'s8',dur:12,build:reunionScene,caps:[[6.5,'"Argus!"']]},
-  {id:'s6',dur:25,build:earthScene,caps:[
-    [0.4,"Seeing the joy in Odysseus's eyes, and realizing how much the warmth and devotion of a small creature mean to people,"],
-    [7.6,'Zeus decided not to close the mission but to bring it down to earth, to humankind.'],
-    [13,`He entrusted the team "${R('[REDACTED]')}" with creating a product that would strengthen bonds and improve communication between people`],
-    [19.4,'through caring for their beloved pets and the happy time spent together.']
+  {id:'s7',dur:12.275873016,motionDuration:13.2,build:petopiaScene,caps:[
+    [0.35845805,`The team "${R('[REDACTED]')}" brought this idea to life, and so the app "Petopia" was born.`],
+    [5.70845805,'And so the mission found new life — among people.'],
+    [8.787528345,'Welcome to Petopia! Make Olympus proud!']
   ]},
-  // The last take was delivered rushed: sentence-final pauses trimmed to 0.3 s and the first sentence
-  // read faster than the rest. The recording has the pauses restored and the first two sentences slowed
-  // to the pace of the earlier scenes, which is why this scene is longer than the original 10 s slot.
-  {id:'s7',dur:13.2,build:petopiaScene,caps:[
-    [0.6,`The team "${R('[REDACTED]')}" brought this idea to life, and so the app "Petopia" was born.`],
-    [5.95,'And so the mission found new life — among people.'],
-    [9.55,'Welcome to Petopia! Make Olympus proud!']
-  ]},
+  // The Petopia title closes the story, after the final narrated scene.
+  {id:'s1',dur:1.5,motionDuration:3,build:titleScene,caps:[]},
 ];
 const total=scenes.reduce((a,s)=>a+s.dur,0);
 
@@ -573,6 +569,9 @@ const dots=scenes.map((s,i)=>{const d=document.createElement('div');d.className=
 prog.addEventListener('click',e=>{const r=prog.getBoundingClientRect();seek((e.clientX-r.left)/r.width*total)});
 
 const anims=el=>el.getAnimations({subtree:true}).filter(a=>!(window.CSSTransition&&a instanceof CSSTransition));
+// Fit each illustrated sequence to its trimmed recording without changing the voice.
+const motionRate=idx=>scenes[idx].motionDuration/scenes[idx].dur;
+const motionTime=(idx,local)=>local*motionRate(idx)*1000;
 const formatTime=seconds=>{const whole=Math.floor(seconds);return Math.floor(whole/60)+':'+String(whole%60).padStart(2,'0')};
 function sceneAt(time){let acc=0;for(let i=0;i<scenes.length;i++){if(time<acc+scenes[i].dur)return[i,acc];acc+=scenes[i].dur}return[scenes.length-1,acc-scenes[scenes.length-1].dur]}
 function setCaption(htmlText){
@@ -580,12 +579,12 @@ function setCaption(htmlText){
   const el=capEls[capSlot]; el.innerHTML=htmlText; el.classList.toggle('show',!!htmlText);
 }
 function activate(idx,local){
-  if(cur>=0 && cur!==idx){const p=els[cur];p.classList.remove('active');setTimeout(()=>{if(!p.classList.contains('active'))p.classList.remove('on')},800)}
+  if(cur>=0 && cur!==idx){const p=els[cur];p.classList.remove('active');setTimeout(()=>{if(!p.classList.contains('active'))p.classList.remove('on')},500)}
   cur=idx;capIdx=-2;
   const el=els[idx];
   if(el.classList.contains('on')){el.classList.remove('on');void el.getBoundingClientRect()}
   el.classList.add('on','active');
-  anims(el).forEach(a=>{a.currentTime=local*1000;playing?a.play():a.pause()});
+  anims(el).forEach(a=>{a.playbackRate=motionRate(idx);a.currentTime=motionTime(idx,local);playing?a.play():a.pause()});
   dots.forEach((d,i)=>d.classList.toggle('cur',i===idx));
 }
 function update(){
@@ -596,7 +595,7 @@ function update(){
   if(ci!==capIdx){capIdx=ci;setCaption(ci<0?'':caps[ci][1])}
   if(scenes[idx].tick)scenes[idx].tick(local);
   // Keep the illustrated motion on the recording's clock, including after buffering.
-  anims(els[idx]).forEach(a=>{if(Math.abs((a.currentTime||0)-local*1000)>120)a.currentTime=local*1000});
+  anims(els[idx]).forEach(a=>{if(Math.abs((a.currentTime||0)-motionTime(idx,local))>120)a.currentTime=motionTime(idx,local)});
   fill.style.width=(t/total*100)+'%';
   timeEl.textContent=formatTime(t)+' / '+formatTime(total);
 }
@@ -617,7 +616,7 @@ function play(){
 }
 function stop(){++playRequest;playing=false;narration.pause();stage.classList.add('paused');playBtn.textContent='Play';cancelAnimationFrame(raf);if(cur>=0)anims(els[cur]).forEach(a=>a.pause())}
 function seek(time){t=Math.max(0,Math.min(total-0.001,time));endEl.classList.remove('show');const [idx,start]=sceneAt(t);
-  if(idx===cur){anims(els[cur]).forEach(a=>{a.currentTime=(t-start)*1000;if(!playing)a.pause()});capIdx=-2}else activate(idx,t-start);
+  if(idx===cur){anims(els[cur]).forEach(a=>{a.currentTime=motionTime(idx,t-start);if(!playing)a.pause()});capIdx=-2}else activate(idx,t-start);
   narration.currentTime=t;update()}
 playBtn.addEventListener('click',()=>playing?stop():play());
 document.getElementById('restart').addEventListener('click',()=>{seek(0);play()});
